@@ -1,6 +1,5 @@
 package com.example.control;
 
-import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -9,7 +8,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import java.io.IOException;
 
 public class AuthFilter implements Filter {
     @Override
@@ -18,16 +17,43 @@ public class AuthFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse res = (HttpServletResponse) response;
-        HttpSession session = req.getSession(false);
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        String role = (String) httpRequest.getSession().getAttribute("role");
+        String uri = httpRequest.getRequestURI();
 
-        if (session == null || session.getAttribute("username") == null || !"admin".equals(session.getAttribute("role"))) {
-            System.out.println("AuthFilter: Unauthorized access to " + req.getRequestURI() + ", redirecting to login.jsp");
-            res.sendRedirect(req.getContextPath() + "/login.jsp");
-        } else {
+        if (uri.endsWith("login.jsp") || uri.endsWith("LoginControl") || uri.endsWith(".css") || uri.endsWith(".js")) {
             chain.doFilter(request, response);
+            return;
         }
+
+        if (role == null) {
+            System.out.println("AuthFilter: No role found, redirecting to login.jsp");
+            httpResponse.sendRedirect("login.jsp");
+            return;
+        }
+
+        if (role.equals("admin")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        if (role.equals("staff") && (
+                uri.endsWith("staffDashboard.jsp") ||
+                uri.endsWith("StaffCustomerControl") ||
+                uri.endsWith("staffManageCustomers.jsp") ||
+                uri.endsWith("editCustomer.jsp") ||
+                uri.endsWith("StaffItemControl") ||
+                uri.endsWith("staffManageItems.jsp") ||
+                uri.endsWith("BillControl") ||
+                uri.endsWith("generateBill.jsp") ||
+                uri.endsWith("help.jsp"))) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        System.out.println("AuthFilter: Unauthorized access for role " + role + " to " + uri);
+        httpResponse.sendRedirect("error.jsp");
     }
 
     @Override
