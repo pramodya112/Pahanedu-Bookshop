@@ -55,13 +55,16 @@ public class ManageCustomersControl extends HttpServlet {
                 String address = request.getParameter("address");
                 System.out.println("ManageCustomersControl: Adding customer: " + firstName + " " + lastName);
                 customerService.addCustomer(firstName, lastName, email, phone, address);
+                request.setAttribute("successMessage", "Customer " + firstName + " " + lastName + " added successfully!");
             } else if ("delete".equals(action)) {
                 int customerId = Integer.parseInt(request.getParameter("customerId"));
                 System.out.println("ManageCustomersControl: Deleting customer with ID: " + customerId);
                 customerService.deleteCustomer(customerId);
             }
-            System.out.println("ManageCustomersControl: Redirecting to manageCustomers");
-            response.sendRedirect("manageCustomers");
+            List<Customer> customerList = customerService.getAllCustomers();
+            request.setAttribute("customerList", customerList);
+            System.out.println("ManageCustomersControl: Forwarding to manageCustomers.jsp");
+            request.getRequestDispatcher("manageCustomers.jsp").forward(request, response);
         } catch (SQLException | NumberFormatException e) {
             System.out.println("ManageCustomersControl: Error: " + e.getMessage());
             request.setAttribute("error", "Error: " + e.getMessage());
