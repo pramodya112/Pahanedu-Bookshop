@@ -26,7 +26,7 @@ public class ManageStaffControl extends HttpServlet {
         try {
             List<Staff> staffList = staffService.getAllStaff();
             request.setAttribute("staffList", staffList);
-            System.out.println("ManageStaffControl: Forwarding to manageStaff.jsp with " + staffList.size() + " staff members");
+            System.out.println("ManageStaffControl: Forwarding to manageStaff.jsp with " + staffList.size() + " staff");
             request.getRequestDispatcher("manageStaff.jsp").forward(request, response);
         } catch (SQLException e) {
             System.out.println("ManageStaffControl: Database error: " + e.getMessage());
@@ -53,15 +53,18 @@ public class ManageStaffControl extends HttpServlet {
                 String firstName = request.getParameter("firstName");
                 String lastName = request.getParameter("lastName");
                 String role = request.getParameter("role");
-                System.out.println("ManageStaffControl: Adding staff: " + username);
+                System.out.println("ManageStaffControl: Adding staff: " + firstName + " " + lastName);
                 staffService.addStaff(username, password, firstName, lastName, role);
+                request.setAttribute("successMessage", "Staff " + firstName + " " + lastName + " added successfully!");
             } else if ("delete".equals(action)) {
                 int staffId = Integer.parseInt(request.getParameter("staffId"));
                 System.out.println("ManageStaffControl: Deleting staff with ID: " + staffId);
                 staffService.deleteStaff(staffId);
             }
-            System.out.println("ManageStaffControl: Redirecting to manageStaff");
-            response.sendRedirect("manageStaff");
+            List<Staff> staffList = staffService.getAllStaff();
+            request.setAttribute("staffList", staffList);
+            System.out.println("ManageStaffControl: Forwarding to manageStaff.jsp");
+            request.getRequestDispatcher("manageStaff.jsp").forward(request, response);
         } catch (SQLException | NumberFormatException e) {
             System.out.println("ManageStaffControl: Error: " + e.getMessage());
             request.setAttribute("error", "Error: " + e.getMessage());
