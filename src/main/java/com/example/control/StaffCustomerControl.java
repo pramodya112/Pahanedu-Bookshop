@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet("/ManageCustomerControl")
-public class ManageCustomersControl extends HttpServlet {
+@WebServlet("/StaffCustomerControl")
+public class StaffCustomerControl extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private CustomerService customerService;
 

@@ -40,13 +40,13 @@ public class AuthFilter implements Filter {
 
         if (role.equals("staff") && (
                 uri.endsWith("staffDashboard.jsp") ||
-                uri.endsWith("StaffCustomerControl") ||
                 uri.endsWith("staffManageCustomers.jsp") ||
                 uri.endsWith("editCustomer.jsp") ||
-                uri.endsWith("StaffItemControl") ||
+                uri.endsWith("StaffCustomerControl") ||
                 uri.endsWith("staffManageItems.jsp") ||
-                uri.endsWith("BillControl") ||
+                uri.endsWith("StaffItemControl") ||
                 uri.endsWith("generateBill.jsp") ||
+                uri.endsWith("BillControl") ||
                 uri.endsWith("help.jsp"))) {
             chain.doFilter(request, response);
             return;

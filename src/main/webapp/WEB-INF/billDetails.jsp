@@ -1,14 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.example.model.Bill" %>
-<%@ page import="com.example.model.Customer" %>
-<%@ page import="com.example.service.CustomerService" %>
-<%@ page import="java.util.List" %>
+<%@ page import="java.util.List, com.example.model.Bill, com.example.model.BillItem" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pahanedu Bookshop - View Bills</title>
+    <title>Pahanedu Bookshop - Bill Details</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
 
@@ -43,12 +40,15 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        h2 {
+        h2, h3, h4 {
             font-family: 'Playfair Display', serif;
             color: #8B4513;
-            font-size: 2.5rem;
             margin-bottom: 1rem;
         }
+
+        h2 { font-size: 2.5rem; }
+        h3 { font-size: 1.8rem; }
+        h4 { font-size: 1.4rem; }
 
         .error {
             color: #B22222;
@@ -56,10 +56,10 @@
             margin-bottom: 1rem;
         }
 
-        .success {
-            color: #228B22;
+        p {
             font-size: 1rem;
-            margin-bottom: 1rem;
+            color: #6B4E31;
+            margin: 0.5rem 0;
         }
 
         table {
@@ -80,20 +80,20 @@
             font-family: 'Playfair Display', serif;
         }
 
-        .view-btn, .back-btn {
+        .back-btn {
+            display: inline-block;
             padding: 0.75rem;
             background-color: #8B4513;
             color: #FFF8DC;
             border: none;
             border-radius: 5px;
             font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
             text-decoration: none;
-            display: inline-block;
+            transition: background-color 0.3s ease;
+            margin-top: 1rem;
         }
 
-        .view-btn:hover, .back-btn:hover {
+        .back-btn:hover {
             background-color: #6B4E31;
         }
 
@@ -102,56 +102,59 @@
                 padding: 1.5rem;
                 margin: 1rem;
             }
-            h2 {
-                font-size: 1.8rem;
-            }
+            h2 { font-size: 1.8rem; }
+            h3 { font-size: 1.5rem; }
+            h4 { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Pahanedu Bookshop - View Bills</h2>
+        <h2>Pahanedu Bookshop - Bill Details</h2>
+        <a href="BillControl" class="back-btn">Back to Bills</a>
         <% if (request.getAttribute("error") != null) { %>
             <p class="error"><%= request.getAttribute("error") %></p>
         <% } %>
-        <% if (request.getAttribute("successMessage") != null) { %>
-            <p class="success"><%= request.getAttribute("successMessage") %></p>
-        <% } %>
         <% 
-            List<Bill> billList = (List<Bill>) request.getAttribute("billList");
-            CustomerService customerService = new CustomerService();
-            if (billList != null && !billList.isEmpty()) { 
+            Bill bill = (Bill) request.getAttribute("bill");
+            if (bill != null) {
         %>
+            <h3>Bill ID: <%= bill.getBillId() %></h3>
+            <p>Customer: <%= bill.getCustomerName() != null ? bill.getCustomerName() : "N/A" %></p>
+            <p>Email: <%= bill.getCustomerEmail() != null ? bill.getCustomerEmail() : "N/A" %></p>
+            <p>Bill Date: <%= bill.getBillDate() != null ? bill.getBillDate() : "N/A" %></p>
+            <p>Total Amount: $<%= String.format("%.2f", bill.getTotalAmount()) %></p>
+            <h4>Items</h4>
             <table>
                 <tr>
-                    <th>Bill ID</th>
-                    <th>Customer</th>
-                    <th>Date</th>
-                    <th>Total Amount ($)</th>
-                    <th>Action</th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
                 </tr>
                 <% 
-                    for (Bill bill : billList) {
-                        Customer customer = null;
-                        try {
-                            customer = customerService.getCustomerById(bill.getCustomerId());
-                        } catch (Exception e) {
-                            request.setAttribute("error", "Error fetching customer: " + e.getMessage());
-                        }
+                    List<BillItem> billItems = bill.getBillItems();
+                    if (billItems != null && !billItems.isEmpty()) {
+                        for (BillItem item : billItems) {
                 %>
                     <tr>
-                        <td><%= bill.getBillId() %></td>
-                        <td><%= customer != null ? customer.getFirstName() + " " + customer.getLastName() : "N/A" %></td>
-                        <td><%= bill.getBillDate() != null ? bill.getBillDate() : "N/A" %></td>
-                        <td><%= String.format("%.2f", bill.getTotalAmount()) %></td>
-                        <td><a href="BillControl?action=view&billId=<%= bill.getBillId() %>" class="view-btn">View Details</a></td>
+                        <td><%= item.getItemName() != null ? item.getItemName() : "N/A" %></td>
+                        <td><%= item.getQuantity() %></td>
+                        <td>$<%= String.format("%.2f", item.getUnitPrice()) %></td>
+                        <td>$<%= String.format("%.2f", item.getQuantity() * item.getUnitPrice()) %></td>
+                    </tr>
+                <% 
+                        }
+                    } else {
+                %>
+                    <tr>
+                        <td colspan="4">No items found.</td>
                     </tr>
                 <% } %>
             </table>
         <% } else { %>
-            <p>No bills found.</p>
+            <p>No bill found.</p>
         <% } %>
-        <a href="staffDashboard.jsp" class="back-btn">Back to Dashboard</a>
     </div>
 </body>
 </html>

@@ -4,6 +4,8 @@ import com.example.dao.StaffDao;
 import com.example.model.Staff;
 import java.sql.SQLException;
 import java.util.List;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class StaffService {
     private final StaffDao staffDao;
@@ -13,27 +15,53 @@ public class StaffService {
     }
 
     public List<Staff> getAllStaff() throws SQLException {
-        System.out.println("StaffService: Fetching all staff");
-        List<Staff> staffList = staffDao.findAllStaff();
-        System.out.println("StaffService: Retrieved " + staffList.size() + " staff members");
-        return staffList;
+        return staffDao.findAllStaff();
     }
 
-    public void addStaff(String username, String password, String firstName, String lastName, String role) throws SQLException {
-        System.out.println("StaffService: Adding staff: " + username);
-        Staff staff = new Staff();
-        staff.setUsername(username);
-        staff.setPassword(password);
-        staff.setFirstName(firstName);
-        staff.setLastName(lastName);
-        staff.setRole(role);
+    public Staff getStaffById(int staffId) throws SQLException {
+        return staffDao.findStaffById(staffId);
+    }
+
+    public void addStaff(Staff staff) throws SQLException {
+        staff.setPassword(hashPassword(staff.getPassword()));
         staffDao.addStaff(staff);
-        System.out.println("StaffService: Staff added: " + username);
+    }
+
+    public void updateStaff(Staff staff) throws SQLException {
+        if (staff.getPassword() != null && !staff.getPassword().isEmpty()) {
+            staff.setPassword(hashPassword(staff.getPassword()));
+        }
+        staffDao.updateStaff(staff);
     }
 
     public void deleteStaff(int staffId) throws SQLException {
-        System.out.println("StaffService: Deleting staff with ID: " + staffId);
         staffDao.deleteStaff(staffId);
-        System.out.println("StaffService: Staff deleted with ID: " + staffId);
+    }
+
+    public Staff authenticateStaff(String username, String password) throws SQLException {
+        Staff staff = staffDao.findStaffByUsername(username);
+        if (staff != null && verifyPassword(password, staff.getPassword())) {
+            return staff;
+        }
+        return null;
+    }
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashedBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Hashing algorithm not found", e);
+        }
+    }
+
+    private boolean verifyPassword(String inputPassword, String storedPassword) {
+        String hashedInput = hashPassword(inputPassword);
+        return hashedInput.equals(storedPassword);
     }
 }

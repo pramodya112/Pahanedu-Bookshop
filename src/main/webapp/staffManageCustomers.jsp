@@ -1,14 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.example.model.Bill" %>
 <%@ page import="com.example.model.Customer" %>
-<%@ page import="com.example.service.CustomerService" %>
 <%@ page import="java.util.List" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pahanedu Bookshop - View Bills</title>
+    <title>Pahanedu Bookshop - Staff Manage Customers</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
 
@@ -72,7 +70,6 @@
             padding: 0.75rem;
             border: 1px solid #D2B48C;
             color: #6B4E31;
-            text-align: left;
         }
 
         th {
@@ -80,7 +77,41 @@
             font-family: 'Playfair Display', serif;
         }
 
-        .view-btn, .back-btn {
+        .form-container {
+            margin-bottom: 2rem;
+        }
+
+        .form-container label {
+            display: block;
+            text-align: left;
+            font-size: 1rem;
+            color: #6B4E31;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-container input, .form-container textarea {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #D2B48C;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-container textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-container input:focus, .form-container textarea:focus {
+            outline: none;
+            border-color: #8B4513;
+            box-shadow: 0 0 5px rgba(139, 69, 19, 0.5);
+        }
+
+        .form-container button, .edit-btn, .back-btn {
             padding: 0.75rem;
             background-color: #8B4513;
             color: #FFF8DC;
@@ -89,11 +120,9 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
         }
 
-        .view-btn:hover, .back-btn:hover {
+        .form-container button:hover, .edit-btn:hover, .back-btn:hover {
             background-color: #6B4E31;
         }
 
@@ -110,48 +139,59 @@
 </head>
 <body>
     <div class="container">
-        <h2>Pahanedu Bookshop - View Bills</h2>
+        <h2>Pahanedu Bookshop - Staff Manage Customers</h2>
         <% if (request.getAttribute("error") != null) { %>
             <p class="error"><%= request.getAttribute("error") %></p>
         <% } %>
         <% if (request.getAttribute("successMessage") != null) { %>
             <p class="success"><%= request.getAttribute("successMessage") %></p>
         <% } %>
-        <% 
-            List<Bill> billList = (List<Bill>) request.getAttribute("billList");
-            CustomerService customerService = new CustomerService();
-            if (billList != null && !billList.isEmpty()) { 
-        %>
+        <div class="form-container">
+            <form action="StaffCustomerControl" method="post">
+                <input type="hidden" name="action" value="add">
+                <label for="firstName">First Name</label>
+                <input type="text" name="firstName" id="firstName" required>
+                <label for="lastName">Last Name</label>
+                <input type="text" name="lastName" id="lastName" required>
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" required>
+                <label for="phone">Phone</label>
+                <input type="text" name="phone" id="phone" required>
+                <label for="address">Address</label>
+                <textarea name="address" id="address" required></textarea>
+                <button type="submit">Add Customer</button>
+            </form>
+        </div>
+        <% List<Customer> customerList = (List<Customer>) request.getAttribute("customerList"); %>
+        <% if (customerList != null && !customerList.isEmpty()) { %>
             <table>
                 <tr>
-                    <th>Bill ID</th>
-                    <th>Customer</th>
-                    <th>Date</th>
-                    <th>Total Amount ($)</th>
+                    <th>ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
                     <th>Action</th>
                 </tr>
-                <% 
-                    for (Bill bill : billList) {
-                        Customer customer = null;
-                        try {
-                            customer = customerService.getCustomerById(bill.getCustomerId());
-                        } catch (Exception e) {
-                            request.setAttribute("error", "Error fetching customer: " + e.getMessage());
-                        }
-                %>
+                <% for (Customer customer : customerList) { %>
                     <tr>
-                        <td><%= bill.getBillId() %></td>
-                        <td><%= customer != null ? customer.getFirstName() + " " + customer.getLastName() : "N/A" %></td>
-                        <td><%= bill.getBillDate() != null ? bill.getBillDate() : "N/A" %></td>
-                        <td><%= String.format("%.2f", bill.getTotalAmount()) %></td>
-                        <td><a href="BillControl?action=view&billId=<%= bill.getBillId() %>" class="view-btn">View Details</a></td>
+                        <td><%= customer.getCustomerId() %></td>
+                        <td><%= customer.getFirstName() %></td>
+                        <td><%= customer.getLastName() %></td>
+                        <td><%= customer.getEmail() %></td>
+                        <td><%= customer.getPhone() %></td>
+                        <td><%= customer.getAddress() %></td>
+                        <td>
+                            <a href="StaffCustomerControl?action=edit&customerId=<%= customer.getCustomerId() %>" class="edit-btn">Edit</a>
+                        </td>
                     </tr>
                 <% } %>
             </table>
         <% } else { %>
-            <p>No bills found.</p>
+            <p>No customers found.</p>
         <% } %>
-        <a href="staffDashboard.jsp" class="back-btn">Back to Dashboard</a>
+        <button class="back-btn" onclick="window.location.href='staffDashboard.jsp'">Back to Dashboard</button>
     </div>
 </body>
 </html>

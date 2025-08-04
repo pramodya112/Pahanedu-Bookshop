@@ -13,26 +13,22 @@ public class ItemService {
     }
 
     public List<Item> getAllItems() throws SQLException {
-        System.out.println("ItemService: Fetching all items");
-        List<Item> itemList = itemDao.findAllItems();
-        System.out.println("ItemService: Retrieved " + itemList.size() + " items");
-        return itemList;
+        return itemDao.findAllItems();
     }
 
-    public void addItem(String name, String description, double price, int stockQuantity) throws SQLException {
-        System.out.println("ItemService: Adding item: " + name);
-        Item item = new Item();
-        item.setName(name);
-        item.setDescription(description);
-        item.setPrice(price);
-        item.setStockQuantity(stockQuantity);
+    public Item getItemById(int itemId) throws SQLException {
+        return itemDao.findItemById(itemId);
+    }
+
+    public void addItem(Item item) throws SQLException {
         itemDao.addItem(item);
-        System.out.println("ItemService: Item added: " + name);
+    }
+
+    public void updateItem(Item item) throws SQLException {
+        itemDao.updateItem(item);
     }
 
     public void deleteItem(int itemId) throws SQLException {
-        System.out.println("ItemService: Deleting item with ID: " + itemId);
         itemDao.deleteItem(itemId);
-        System.out.println("ItemService: Item deleted with ID: " + itemId);
     }
 }

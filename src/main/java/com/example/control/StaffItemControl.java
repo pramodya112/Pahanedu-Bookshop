@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet("/ManageItemsControl")
-public class ManageItemsControl extends HttpServlet {
+@WebServlet("/StaffItemControl")
+public class StaffItemControl extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private ItemService itemService;
 

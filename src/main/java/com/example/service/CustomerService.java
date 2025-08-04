@@ -13,27 +13,22 @@ public class CustomerService {
     }
 
     public List<Customer> getAllCustomers() throws SQLException {
-        System.out.println("CustomerService: Fetching all customers");
-        List<Customer> customerList = customerDao.findAllCustomers();
-        System.out.println("CustomerService: Retrieved " + customerList.size() + " customers");
-        return customerList;
+        return customerDao.findAllCustomers();
     }
 
-    public void addCustomer(String firstName, String lastName, String email, String phone, String address) throws SQLException {
-        System.out.println("CustomerService: Adding customer: " + firstName + " " + lastName);
-        Customer customer = new Customer();
-        customer.setFirstName(firstName);
-        customer.setLastName(lastName);
-        customer.setEmail(email);
-        customer.setPhone(phone);
-        customer.setAddress(address);
+    public Customer getCustomerById(int customerId) throws SQLException {
+        return customerDao.findCustomerById(customerId);
+    }
+
+    public void addCustomer(Customer customer) throws SQLException {
         customerDao.addCustomer(customer);
-        System.out.println("CustomerService: Customer added: " + firstName + " " + lastName);
+    }
+
+    public void updateCustomer(Customer customer) throws SQLException {
+        customerDao.updateCustomer(customer);
     }
 
     public void deleteCustomer(int customerId) throws SQLException {
-        System.out.println("CustomerService: Deleting customer with ID: " + customerId);
         customerDao.deleteCustomer(customerId);
-        System.out.println("CustomerService: Customer deleted with ID: " + customerId);
     }
 }

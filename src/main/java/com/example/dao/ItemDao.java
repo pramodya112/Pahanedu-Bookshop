@@ -40,6 +40,31 @@ public class ItemDao {
         return itemList;
     }
 
+    public Item findItemById(int itemId) throws SQLException {
+        Item item = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM items WHERE item_id = ?")) {
+                stmt.setInt(1, itemId);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    item = new Item();
+                    item.setItemId(rs.getInt("item_id"));
+                    item.setName(rs.getString("name"));
+                    item.setDescription(rs.getString("description"));
+                    item.setPrice(rs.getDouble("price"));
+                    item.setStockQuantity(rs.getInt("stock_quantity"));
+                    System.out.println("ItemDao: Found item: " + item.getName());
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            System.out.println("ItemDao: JDBC Driver error: " + e.getMessage());
+            throw new SQLException("JDBC Driver not found", e);
+        }
+        return item;
+    }
+
     public void addItem(Item item) throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
@@ -59,14 +84,15 @@ public class ItemDao {
         }
     }
 
-    public void deleteItem(int itemId) throws SQLException {
+    public void updateItemStock(int itemId, int stockQuantity) throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-                 PreparedStatement stmt = conn.prepareStatement("DELETE FROM items WHERE item_id = ?")) {
-                stmt.setInt(1, itemId);
+                 PreparedStatement stmt = conn.prepareStatement("UPDATE items SET stock_quantity = ? WHERE item_id = ?")) {
+                stmt.setInt(1, stockQuantity);
+                stmt.setInt(2, itemId);
                 stmt.executeUpdate();
-                System.out.println("ItemDao: Deleted item with ID: " + itemId);
+                System.out.println("ItemDao: Updated stock for item ID: " + itemId);
             }
         } catch (ClassNotFoundException e) {
             System.out.println("ItemDao: JDBC Driver error: " + e.getMessage());
