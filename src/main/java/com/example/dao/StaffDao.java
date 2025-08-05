@@ -14,6 +14,31 @@ public class StaffDao {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "MYSQL@123";
 
+    public Staff findStaffByUsernameAndPassword(String username, String password) throws SQLException {
+        Staff staff = null;
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM staff WHERE username = ? AND password = ?")) {
+                stmt.setString(1, username);
+                stmt.setString(2, password);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    staff = new Staff();
+                    staff.setStaffId(rs.getInt("staff_id"));
+                    staff.setUsername(rs.getString("username"));
+                    staff.setFirstName(rs.getString("first_name"));
+                    staff.setLastName(rs.getString("last_name"));
+                    staff.setRole(rs.getString("role"));
+                    staff.setPassword(rs.getString("password"));
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("JDBC Driver not found", e);
+        }
+        return staff;
+    }
+
     public List<Staff> findAllStaff() throws SQLException {
         List<Staff> staffList = new ArrayList<>();
         try {

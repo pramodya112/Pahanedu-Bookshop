@@ -3,6 +3,7 @@ package com.example.control;
 import com.example.model.Log;
 import com.example.model.Staff;
 import com.example.dao.LogDao;
+import com.example.service.StaffService;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -17,10 +18,12 @@ import java.sql.Timestamp;
 public class LoginControl extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private LogDao logDao;
+    private StaffService staffService;
 
     @Override
     public void init() throws ServletException {
         logDao = new LogDao();
+        staffService = new StaffService();
     }
 
     @Override
@@ -48,14 +51,31 @@ public class LoginControl extends HttpServlet {
             }
             response.sendRedirect("adminDashboard.jsp");
         } else {
-            log.setAction("Failed login: Invalid credentials for username=" + username);
+            // Staff authentication
             try {
-                logDao.addLog(log);
+                Staff staff = staffService.authenticateStaff(username, password);
+                if (staff != null) {
+                    HttpSession session = request.getSession(true);
+                    session.setAttribute("staff", staff);
+                    log.setAction("Staff login successful for username=" + username);
+                    logDao.addLog(log);
+                    response.sendRedirect("staffDashboard.jsp");
+                } else {
+                    log.setAction("Failed login: Invalid staff credentials for username=" + username);
+                    logDao.addLog(log);
+                    request.setAttribute("error", "Invalid username or password");
+                    request.getRequestDispatcher("login.jsp").forward(request, response);
+                }
             } catch (SQLException e) {
-                System.out.println("LogDao: Failed to log error: " + e.getMessage());
+                log.setAction("Failed login: Database error for username=" + username);
+                try {
+                    logDao.addLog(log);
+                } catch (SQLException ex) {
+                    System.out.println("LogDao: Failed to log error: " + ex.getMessage());
+                }
+                request.setAttribute("error", "Database error: " + e.getMessage());
+                request.getRequestDispatcher("login.jsp").forward(request, response);
             }
-            request.setAttribute("error", "Invalid username or password");
-            request.getRequestDispatcher("login.jsp").forward(request, response);
         }
     }
 }

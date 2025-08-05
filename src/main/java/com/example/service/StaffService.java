@@ -12,6 +12,10 @@ public class StaffService {
         this.staffDao = new StaffDao();
     }
 
+    public Staff authenticateStaff(String username, String password) throws SQLException {
+        return staffDao.findStaffByUsernameAndPassword(username, password);
+    }
+
     public List<Staff> getAllStaff() throws SQLException {
         return staffDao.findAllStaff();
     }
@@ -29,7 +33,6 @@ public class StaffService {
 
     public void updateStaff(Staff staff) throws SQLException {
         if (staff.getPassword() == null || staff.getPassword().isEmpty()) {
-            // Fetch existing password to avoid overwriting with null
             Staff existingStaff = staffDao.findStaffById(staff.getStaffId());
             if (existingStaff != null) {
                 staff.setPassword(existingStaff.getPassword());
