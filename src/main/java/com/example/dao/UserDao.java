@@ -14,55 +14,79 @@ public class UserDao {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "MYSQL@123";
 
-    public User findUserByUsernameAndPassword(String username, String password) throws SQLException {
-        User user = null;
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE username = ? AND password = ?")) {
-                stmt.setString(1, username);
-                stmt.setString(2, password);
-                ResultSet rs = stmt.executeQuery();
-                if (rs.next()) {
-                    user = new User();
-                    user.setUserId(rs.getInt("id"));
-                    user.setUsername(rs.getString("username"));
-                    user.setPassword(rs.getString("password"));
-                    user.setRole(rs.getString("role"));
-                    System.out.println("UserDao: Found user: " + user.getUsername());
-                } else {
-                    System.out.println("UserDao: No user found for username: " + username);
-                }
+    public List<User> getAllCustomers() throws SQLException {
+        List<User> customerList = new ArrayList<>();
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE role = 'customer'");
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                User user = new User();
+                user.setUserId(rs.getInt("user_id"));
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password"));
+                user.setFirstName(rs.getString("first_name"));
+                user.setLastName(rs.getString("last_name"));
+                user.setRole(rs.getString("role"));
+                customerList.add(user);
             }
-        } catch (ClassNotFoundException e) {
-            System.out.println("UserDao: JDBC Driver error: " + e.getMessage());
-            throw new SQLException("JDBC Driver not found", e);
         }
-        return user;
+        return customerList;
     }
 
-    public List<User> findUsersByRole(String role) throws SQLException {
-        List<User> users = new ArrayList<>();
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-                 PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE role = ?")) {
-                stmt.setString(1, role);
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
+    public void addUser(User user) throws SQLException {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(
+                     "INSERT INTO users (username, password, first_name, last_name, role) VALUES (?, ?, ?, ?, ?)")) {
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getPassword());
+            stmt.setString(3, user.getFirstName());
+            stmt.setString(4, user.getLastName());
+            stmt.setString(5, user.getRole());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void updateUser(User user) throws SQLException {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(
+                     "UPDATE users SET username = ?, password = ?, first_name = ?, last_name = ?, role = ? WHERE user_id = ?")) {
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getPassword());
+            stmt.setString(3, user.getFirstName());
+            stmt.setString(4, user.getLastName());
+            stmt.setString(5, user.getRole());
+            stmt.setInt(6, user.getUserId());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void deleteUser(int userId) throws SQLException {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement("DELETE FROM users WHERE user_id = ?")) {
+            stmt.setInt(1, userId);
+            stmt.executeUpdate();
+        }
+    }
+
+    public User findUserByUsernameAndPassword(String username, String password) throws SQLException {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT * FROM users WHERE username = ? AND password = ?")) {
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
                     User user = new User();
-                    user.setUserId(rs.getInt("id"));
+                    user.setUserId(rs.getInt("user_id"));
                     user.setUsername(rs.getString("username"));
                     user.setPassword(rs.getString("password"));
+                    user.setFirstName(rs.getString("first_name"));
+                    user.setLastName(rs.getString("last_name"));
                     user.setRole(rs.getString("role"));
-                    users.add(user);
+                    return user;
                 }
-                System.out.println("UserDao: Found " + users.size() + " users with role=" + role);
+                return null;
             }
-        } catch (ClassNotFoundException e) {
-            System.out.println("UserDao: JDBC Driver error: " + e.getMessage());
-            throw new SQLException("JDBC Driver not found", e);
         }
-        return users;
     }
 }

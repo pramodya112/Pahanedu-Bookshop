@@ -1,12 +1,14 @@
 package com.example.control;
 
 import com.example.model.Item;
+import com.example.model.Staff;
 import com.example.service.ItemService;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,6 +25,12 @@ public class StaffItemControl extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("staff") == null || !"admin".equals(((Staff) session.getAttribute("staff")).getRole())) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
         String action = request.getParameter("action");
         try {
             if (action == null || action.isEmpty()) {
@@ -50,6 +58,12 @@ public class StaffItemControl extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("staff") == null || !"admin".equals(((Staff) session.getAttribute("staff")).getRole())) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
         String action = request.getParameter("action");
         try {
             if ("add".equals(action)) {

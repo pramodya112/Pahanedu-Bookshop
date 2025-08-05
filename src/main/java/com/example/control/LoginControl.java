@@ -1,42 +1,61 @@
 package com.example.control;
 
-import com.example.model.User;
-import com.example.service.UserService;
-import java.io.IOException;
-import java.sql.SQLException;
+import com.example.model.Log;
+import com.example.model.Staff;
+import com.example.dao.LogDao;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 
+@WebServlet("/LoginControl")
 public class LoginControl extends HttpServlet {
-    private final UserService userService = new UserService();
+    private static final long serialVersionUID = 1L;
+    private LogDao logDao;
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    public void init() throws ServletException {
+        logDao = new LogDao();
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        System.out.println("LoginControl: Processing login for username=" + username);
+        Log log = new Log();
+        log.setUsername(username);
+        log.setLogTime(new Timestamp(System.currentTimeMillis()));
 
-        try {
-            User user = userService.authenticate(username, password);
-            if (user != null) {
-                HttpSession session = request.getSession();
-                session.setAttribute("username", user.getUsername());
-                session.setAttribute("role", user.getRole());
-                System.out.println("LoginControl: Redirecting to adminDashboard.jsp");
-                response.sendRedirect("adminDashboard.jsp");
-            } else {
-                System.out.println("LoginControl: Invalid credentials");
-                request.setAttribute("error", "Invalid username or password");
-                request.getRequestDispatcher("login.jsp").forward(request, response);
+        // Hardcoded admin check
+        if ("admin".equals(username) && "adminpass".equals(password)) {
+            HttpSession session = request.getSession(true);
+            Staff admin = new Staff();
+            admin.setUsername("admin");
+            admin.setFirstName("Admin");
+            admin.setLastName("User");
+            admin.setRole("admin");
+            session.setAttribute("staff", admin);
+            log.setAction("Hardcoded admin login");
+            try {
+                logDao.addLog(log);
+            } catch (SQLException e) {
+                System.out.println("LogDao: Failed to log admin login: " + e.getMessage());
             }
-        } catch (SQLException e) {
-            System.out.println("LoginControl: Database error: " + e.getMessage());
-            request.setAttribute("error", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("error.jsp").forward(request, response);
+            response.sendRedirect("adminDashboard.jsp");
+        } else {
+            log.setAction("Failed login: Invalid credentials for username=" + username);
+            try {
+                logDao.addLog(log);
+            } catch (SQLException e) {
+                System.out.println("LogDao: Failed to log error: " + e.getMessage());
+            }
+            request.setAttribute("error", "Invalid username or password");
+            request.getRequestDispatcher("login.jsp").forward(request, response);
         }
     }
 }

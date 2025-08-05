@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="com.example.model.Staff" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -105,20 +106,21 @@
 <body>
     <div class="dashboard-container">
         <h2>Pahanedu Bookshop - Admin Dashboard</h2>
-        <p>Session Username: <%= session.getAttribute("username") %></p>
-        <p>Session Role: <%= session.getAttribute("role") %></p>
-        <% if (!"admin".equals(session.getAttribute("role"))) { %>
+        <% Staff staff = (Staff) session.getAttribute("staff"); %>
+        <p>Session Username: <%= staff != null ? staff.getUsername() : "None" %></p>
+        <p>Session Role: <%= staff != null ? staff.getRole() : "None" %></p>
+        <% if (staff == null || !"admin".equals(staff.getRole())) { %>
             <p class="error">Access denied. Please log in as admin.</p>
-            <a href="login.jsp" style="color: #8B4513; text-decoration: none;">Login</a>
+            <a href="${pageContext.request.contextPath}/login.jsp" style="color: #8B4513; text-decoration: none;">Login</a>
         <% } else { %>
-            <p class="welcome">Welcome, <%= session.getAttribute("username") %>!</p>
+            <p class="welcome">Welcome, <%= staff.getUsername() %>!</p>
             <div class="dashboard">
-                <a href="manageCustomers">Manage Customers</a>
-                <a href="manageStaff">Manage Staff</a>
-                <a href="manageItems">Manage Items</a>
-                <a href="viewBills">View Bills</a>
-                <a href="viewLogs">View Logs</a>
-                <a href="logout">Logout</a>
+                <a href="${pageContext.request.contextPath}/manageCustomers">Manage Customers</a>
+                <a href="${pageContext.request.contextPath}/manageStaff">Manage Staff</a>
+                <a href="${pageContext.request.contextPath}/manageItems">Manage Items</a>
+                <a href="${pageContext.request.contextPath}/viewBills">View Bills</a>
+                <a href="${pageContext.request.contextPath}/viewLogs">View Logs</a>
+                <a href="${pageContext.request.contextPath}/logout">Logout</a>
             </div>
         <% } %>
     </div>

@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet("/ManageItemsControl")
+@WebServlet("/manageItems")
 public class ManageItemsControl extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private ItemService itemService;
@@ -25,26 +25,22 @@ public class ManageItemsControl extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
         try {
-            if (action == null || action.isEmpty()) {
-                List<Item> itemList = itemService.getAllItems();
-                request.setAttribute("itemList", itemList);
-                request.getRequestDispatcher("manageItems.jsp").forward(request, response);
-            } else if ("edit".equals(action)) {
+            if ("edit".equals(action)) {
                 int itemId = Integer.parseInt(request.getParameter("itemId"));
                 Item item = itemService.getItemById(itemId);
-                request.setAttribute("item", item);
-                request.getRequestDispatcher("editItem.jsp").forward(request, response);
-            } else if ("delete".equals(action)) {
-                int itemId = Integer.parseInt(request.getParameter("itemId"));
-                itemService.deleteItem(itemId);
-                request.setAttribute("successMessage", "Item deleted successfully.");
-                List<Item> itemList = itemService.getAllItems();
-                request.setAttribute("itemList", itemList);
-                request.getRequestDispatcher("manageItems.jsp").forward(request, response);
+                if (item != null) {
+                    request.setAttribute("item", item);
+                    request.getRequestDispatcher("editItem.jsp").forward(request, response);
+                } else {
+                    request.setAttribute("error", "Item not found");
+                    loadItemList(request, response);
+                }
+            } else {
+                loadItemList(request, response);
             }
         } catch (SQLException e) {
             request.setAttribute("error", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("manageItems.jsp").forward(request, response);
+            loadItemList(request, response);
         }
     }
 
@@ -53,28 +49,40 @@ public class ManageItemsControl extends HttpServlet {
         String action = request.getParameter("action");
         try {
             if ("add".equals(action)) {
-                String name = request.getParameter("name");
-                double price = Double.parseDouble(request.getParameter("price"));
-                int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
                 Item item = new Item();
-                item.setName(name);
-                item.setPrice(price);
-                item.setStockQuantity(stockQuantity);
+                item.setTitle(request.getParameter("title"));
+                item.setAuthor(request.getParameter("author"));
+                item.setGenre(request.getParameter("genre"));
+                item.setPrice(Double.parseDouble(request.getParameter("price")));
+                item.setQuantity(Integer.parseInt(request.getParameter("quantity")));
                 itemService.addItem(item);
-                request.setAttribute("successMessage", "Item added successfully.");
+                request.setAttribute("successMessage", "Item added successfully");
             } else if ("update".equals(action)) {
-                int itemId = Integer.parseInt(request.getParameter("itemId"));
-                String name = request.getParameter("name");
-                double price = Double.parseDouble(request.getParameter("price"));
-                int stockQuantity = Integer.parseInt(request.getParameter("stockQuantity"));
                 Item item = new Item();
-                item.setItemId(itemId);
-                item.setName(name);
-                item.setPrice(price);
-                item.setStockQuantity(stockQuantity);
+                item.setItemId(Integer.parseInt(request.getParameter("itemId")));
+                item.setTitle(request.getParameter("title"));
+                item.setAuthor(request.getParameter("author"));
+                item.setGenre(request.getParameter("genre"));
+                item.setPrice(Double.parseDouble(request.getParameter("price")));
+                item.setQuantity(Integer.parseInt(request.getParameter("quantity")));
                 itemService.updateItem(item);
-                request.setAttribute("successMessage", "Item updated successfully.");
+                request.setAttribute("successMessage", "Item updated successfully");
+            } else if ("delete".equals(action)) {
+                int itemId = Integer.parseInt(request.getParameter("itemId"));
+                itemService.deleteItem(itemId);
+                request.setAttribute("successMessage", "Item deleted successfully");
+            } else {
+                request.setAttribute("error", "Invalid action");
             }
+            loadItemList(request, response);
+        } catch (SQLException | NumberFormatException e) {
+            request.setAttribute("error", "Error processing request: " + e.getMessage());
+            loadItemList(request, response);
+        }
+    }
+
+    private void loadItemList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
             List<Item> itemList = itemService.getAllItems();
             request.setAttribute("itemList", itemList);
             request.getRequestDispatcher("manageItems.jsp").forward(request, response);

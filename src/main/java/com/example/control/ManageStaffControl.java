@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet("/ManageStaffControl")
+@WebServlet("/manageStaff")
 public class ManageStaffControl extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private StaffService staffService;
@@ -23,25 +23,11 @@ public class ManageStaffControl extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getParameter("action");
         try {
-            if (action == null || action.isEmpty()) {
-                List<Staff> staffList = staffService.getAllStaff();
-                request.setAttribute("staffList", staffList);
-                request.getRequestDispatcher("manageStaff.jsp").forward(request, response);
-            } else if ("edit".equals(action)) {
-                int staffId = Integer.parseInt(request.getParameter("staffId"));
-                Staff staff = staffService.getStaffById(staffId);
-                request.setAttribute("staff", staff);
-                request.getRequestDispatcher("editStaff.jsp").forward(request, response);
-            } else if ("delete".equals(action)) {
-                int staffId = Integer.parseInt(request.getParameter("staffId"));
-                staffService.deleteStaff(staffId);
-                request.setAttribute("successMessage", "Staff deleted successfully.");
-                List<Staff> staffList = staffService.getAllStaff();
-                request.setAttribute("staffList", staffList);
-                request.getRequestDispatcher("manageStaff.jsp").forward(request, response);
-            }
+            // Retrieve all staff members
+            List<Staff> staffList = staffService.getAllStaff();
+            request.setAttribute("staffList", staffList);
+            request.getRequestDispatcher("manageStaff.jsp").forward(request, response);
         } catch (SQLException e) {
             request.setAttribute("error", "Database error: " + e.getMessage());
             request.getRequestDispatcher("manageStaff.jsp").forward(request, response);
@@ -51,33 +37,43 @@ public class ManageStaffControl extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+
         try {
             if ("add".equals(action)) {
-                String username = request.getParameter("username");
-                String password = request.getParameter("password");
-                String name = request.getParameter("name");
+                // Add new staff
                 Staff staff = new Staff();
-                staff.setUsername(username);
-                staff.setPassword(password); // Password will be hashed in StaffService
-                staff.setName(name);
+                staff.setUsername(request.getParameter("username"));
+                staff.setPassword(request.getParameter("password")); // Assumes password hashing in StaffService
+                staff.setFirstName(request.getParameter("firstName"));
+                staff.setLastName(request.getParameter("lastName"));
+                staff.setRole(request.getParameter("role"));
                 staffService.addStaff(staff);
-                request.setAttribute("successMessage", "Staff added successfully.");
+                request.setAttribute("message", "Staff added successfully");
+
             } else if ("update".equals(action)) {
-                int staffId = Integer.parseInt(request.getParameter("staffId"));
-                String username = request.getParameter("username");
-                String password = request.getParameter("password");
-                String name = request.getParameter("name");
+                // Update existing staff
                 Staff staff = new Staff();
-                staff.setStaffId(staffId);
-                staff.setUsername(username);
-                staff.setPassword(password); // Password will be hashed if changed
-                staff.setName(name);
+                staff.setStaffId(Integer.parseInt(request.getParameter("staffId")));
+                staff.setUsername(request.getParameter("username"));
+                staff.setPassword(request.getParameter("password")); // Assumes password hashing in StaffService
+                staff.setFirstName(request.getParameter("firstName"));
+                staff.setLastName(request.getParameter("lastName"));
+                staff.setRole(request.getParameter("role"));
                 staffService.updateStaff(staff);
-                request.setAttribute("successMessage", "Staff updated successfully.");
+                request.setAttribute("message", "Staff updated successfully");
+
+            } else if ("delete".equals(action)) {
+                // Delete staff
+                int staffId = Integer.parseInt(request.getParameter("staffId"));
+                staffService.deleteStaff(staffId);
+                request.setAttribute("message", "Staff deleted successfully");
             }
+
+            // Refresh staff list after action
             List<Staff> staffList = staffService.getAllStaff();
             request.setAttribute("staffList", staffList);
             request.getRequestDispatcher("manageStaff.jsp").forward(request, response);
+
         } catch (SQLException e) {
             request.setAttribute("error", "Database error: " + e.getMessage());
             request.getRequestDispatcher("manageStaff.jsp").forward(request, response);

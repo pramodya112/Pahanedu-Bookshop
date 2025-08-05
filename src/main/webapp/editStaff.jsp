@@ -1,13 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.example.model.Customer" %>
-<%@ page import="com.example.service.CustomerService" %>
+<%@ page import="com.example.model.Staff" %>
+<%@ page import="com.example.service.StaffService" %>
 <%@ page import="java.sql.SQLException" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Customer - Pahanedu Bookshop</title>
+    <title>Edit Staff - Pahanedu Bookshop</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
 
@@ -57,7 +57,7 @@
             margin-bottom: 0.5rem;
         }
 
-        input[type="text"], textarea {
+        input[type="text"], input[type="password"] {
             width: 100%;
             padding: 0.75rem;
             margin-bottom: 1rem;
@@ -65,10 +65,6 @@
             border-radius: 5px;
             font-size: 1rem;
             box-sizing: border-box;
-        }
-
-        textarea {
-            height: 100px;
         }
 
         input[type="submit"] {
@@ -97,43 +93,42 @@
 </head>
 <body>
     <div class="container">
-        <h2>Edit Customer</h2>
+        <h2>Edit Staff</h2>
         <% 
-            String customerId = request.getParameter("customerId");
-            Customer customer = null;
+            String staffId = request.getParameter("staffId");
+            Staff staff = null;
             try {
-                CustomerService customerService = new CustomerService();
-                customer = customerService.getAllCustomers().stream()
-                        .filter(c -> c.getCustomerId() == Integer.parseInt(customerId))
-                        .findFirst()
-                        .orElse(null);
+                StaffService staffService = new StaffService();
+                staff = staffService.getStaffById(Integer.parseInt(staffId));
             } catch (SQLException e) {
-                request.setAttribute("error", "Error loading customer: " + e.getMessage());
+                request.setAttribute("error", "Error loading staff: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "Invalid staff ID");
             }
         %>
         <% if (request.getAttribute("error") != null) { %>
             <p class="error"><%= request.getAttribute("error") %></p>
         <% } %>
-        <% if (customer != null) { %>
-            <form action="${pageContext.request.contextPath}/manageCustomers" method="post">
+        <% if (staff != null) { %>
+            <form action="${pageContext.request.contextPath}/manageStaff" method="post">
                 <input type="hidden" name="action" value="update">
-                <input type="hidden" name="customerId" value="<%= customer.getCustomerId() %>">
+                <input type="hidden" name="staffId" value="<%= staff.getStaffId() %>">
+                <label for="username">Username</label>
+                <input type="text" name="username" id="username" value="<%= staff.getUsername() %>" required>
+                <label for="password">Password (leave blank to keep unchanged)</label>
+                <input type="password" name="password" id="password">
                 <label for="firstName">First Name</label>
-                <input type="text" name="firstName" id="firstName" value="<%= customer.getFirstName() %>" required>
+                <input type="text" name="firstName" id="firstName" value="<%= staff.getFirstName() %>" required>
                 <label for="lastName">Last Name</label>
-                <input type="text" name="lastName" id="lastName" value="<%= customer.getLastName() %>" required>
-                <label for="email">Email</label>
-                <input type="text" name="email" id="email" value="<%= customer.getEmail() %>" required>
-                <label for="phone">Phone</label>
-                <input type="text" name="phone" id="phone" value="<%= customer.getPhone() %>" required>
-                <label for="address">Address</label>
-                <textarea name="address" id="address" required><%= customer.getAddress() %></textarea>
-                <input type="submit" value="Update Customer">
+                <input type="text" name="lastName" id="lastName" value="<%= staff.getLastName() %>" required>
+                <label for="role">Role</label>
+                <input type="text" name="role" id="role" value="<%= staff.getRole() %>" required>
+                <input type="submit" value="Update Staff">
             </form>
         <% } else { %>
-            <p class="error">Customer not found.</p>
+            <p class="error">Staff not found.</p>
         <% } %>
-        <a href="${pageContext.request.contextPath}/manageCustomers">Back to Manage Customers</a>
+        <a href="${pageContext.request.contextPath}/manageStaff">Back to Manage Staff</a>
     </div>
 </body>
 </html>

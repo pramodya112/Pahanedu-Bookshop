@@ -120,10 +120,21 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin: 0 0.25rem;
         }
 
         .form-container button:hover, .delete-btn:hover, .back-btn:hover {
             background-color: #6B4E31;
+        }
+
+        a.edit-link {
+            color: #8B4513;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        a.edit-link:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 600px) {
@@ -149,14 +160,16 @@
         <div class="form-container">
             <form action="manageItems" method="post">
                 <input type="hidden" name="action" value="add">
-                <label for="name">Item Name</label>
-                <input type="text" name="name" id="name" required>
-                <label for="description">Description</label>
-                <textarea name="description" id="description" required></textarea>
+                <label for="title">Book Title</label>
+                <input type="text" name="title" id="title" required>
+                <label for="author">Author</label>
+                <input type="text" name="author" id="author" required>
+                <label for="genre">Genre</label>
+                <input type="text" name="genre" id="genre" required>
                 <label for="price">Price ($)</label>
                 <input type="number" step="0.01" name="price" id="price" required>
-                <label for="stockQuantity">Stock Quantity</label>
-                <input type="number" name="stockQuantity" id="stockQuantity" required>
+                <label for="quantity">Quantity</label>
+                <input type="number" name="quantity" id="quantity" required>
                 <button type="submit">Add Item</button>
             </form>
         </div>
@@ -165,20 +178,23 @@
             <table>
                 <tr>
                     <th>ID</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Genre</th>
                     <th>Price ($)</th>
-                    <th>Stock Quantity</th>
+                    <th>Quantity</th>
                     <th>Action</th>
                 </tr>
                 <% for (Item item : itemList) { %>
                     <tr>
                         <td><%= item.getItemId() %></td>
-                        <td><%= item.getName() %></td>
-                        <td><%= item.getDescription() %></td>
+                        <td><%= item.getTitle() %></td>
+                        <td><%= item.getAuthor() %></td>
+                        <td><%= item.getGenre() %></td>
                         <td><%= String.format("%.2f", item.getPrice()) %></td>
-                        <td><%= item.getStockQuantity() %></td>
+                        <td><%= item.getQuantity() %></td>
                         <td>
+                            <a href="manageItems?action=edit&itemId=<%= item.getItemId() %>" class="edit-link">Edit</a>
                             <form action="manageItems" method="post" style="display:inline;">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="itemId" value="<%= item.getItemId() %>">

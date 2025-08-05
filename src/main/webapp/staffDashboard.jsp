@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="com.example.model.Staff" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,7 +23,7 @@
             font-family: 'Roboto', sans-serif;
         }
 
-        .container {
+        .dashboard-container {
             background-color: #FFF8DC;
             padding: 2rem;
             border-radius: 10px;
@@ -46,29 +47,37 @@
             margin-bottom: 1rem;
         }
 
-        .dashboard-links {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
+        p {
+            color: #6B4E31;
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
         }
 
-        .dashboard-links a {
+        p.error {
+            color: #B22222;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard a {
+            display: block;
             padding: 0.75rem;
-            background-color: #8B4513;
-            color: #FFF8DC;
-            border: none;
+            background-color: #D2B48C;
+            color: #6B4E31;
+            text-decoration: none;
             border-radius: 5px;
             font-size: 1rem;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
+            margin: 0.5rem 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .dashboard-links a:hover {
-            background-color: #6B4E31;
+        .dashboard a:hover {
+            background-color: #8B4513;
+            color: #FFF8DC;
         }
 
         @media (max-width: 600px) {
-            .container {
+            .dashboard-container {
                 padding: 1.5rem;
                 margin: 1rem;
             }
@@ -79,15 +88,20 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard-container">
         <h2>Pahanedu Bookshop - Staff Dashboard</h2>
-        <div class="dashboard-links">
-            <a href="StaffCustomerControl">Manage Customers</a>
-            <a href="StaffItemControl">Manage Items</a>
-            <a href="BillControl">Generate Bill</a>
-            <a href="help.jsp">Help</a>
-            <a href="logout">Logout</a>
-        </div>
+        <% Staff staff = (Staff) session.getAttribute("staff"); %>
+        <% if (staff == null || !"staff".equals(staff.getRole())) { %>
+            <p class="error">Access denied. Please log in as staff.</p>
+            <a href="login.jsp">Login</a>
+        <% } else { %>
+            <p>Welcome, <%= staff.getUsername() %>!</p>
+            <div class="dashboard">
+                <a href="manageItems">Manage Items</a>
+                <a href="viewBills">View Bills</a>
+                <a href="logout">Logout</a>
+            </div>
+        <% } %>
     </div>
 </body>
 </html>

@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet("/ManageCustomerControl")
+@WebServlet("/manageCustomers")
 public class ManageCustomersControl extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private CustomerService customerService;
@@ -23,25 +23,11 @@ public class ManageCustomersControl extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String action = request.getParameter("action");
         try {
-            if (action == null || action.isEmpty()) {
-                List<Customer> customerList = customerService.getAllCustomers();
-                request.setAttribute("customerList", customerList);
-                request.getRequestDispatcher("manageCustomers.jsp").forward(request, response);
-            } else if ("edit".equals(action)) {
-                int customerId = Integer.parseInt(request.getParameter("customerId"));
-                Customer customer = customerService.getCustomerById(customerId);
-                request.setAttribute("customer", customer);
-                request.getRequestDispatcher("editCustomer.jsp").forward(request, response);
-            } else if ("delete".equals(action)) {
-                int customerId = Integer.parseInt(request.getParameter("customerId"));
-                customerService.deleteCustomer(customerId);
-                request.setAttribute("successMessage", "Customer deleted successfully.");
-                List<Customer> customerList = customerService.getAllCustomers();
-                request.setAttribute("customerList", customerList);
-                request.getRequestDispatcher("manageCustomers.jsp").forward(request, response);
-            }
+            // Retrieve all customers
+            List<Customer> customerList = customerService.getAllCustomers();
+            request.setAttribute("customerList", customerList);
+            request.getRequestDispatcher("manageCustomers.jsp").forward(request, response);
         } catch (SQLException e) {
             request.setAttribute("error", "Database error: " + e.getMessage());
             request.getRequestDispatcher("manageCustomers.jsp").forward(request, response);
@@ -51,37 +37,43 @@ public class ManageCustomersControl extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+
         try {
             if ("add".equals(action)) {
-                String firstName = request.getParameter("firstName");
-                String lastName = request.getParameter("lastName");
-                String email = request.getParameter("email");
-                String phone = request.getParameter("phone");
+                // Add new customer
                 Customer customer = new Customer();
-                customer.setFirstName(firstName);
-                customer.setLastName(lastName);
-                customer.setEmail(email);
-                customer.setPhone(phone);
+                customer.setFirstName(request.getParameter("firstName"));
+                customer.setLastName(request.getParameter("lastName"));
+                customer.setEmail(request.getParameter("email"));
+                customer.setPhone(request.getParameter("phone"));
+                customer.setAddress(request.getParameter("address"));
                 customerService.addCustomer(customer);
-                request.setAttribute("successMessage", "Customer added successfully.");
+                request.setAttribute("message", "Customer added successfully");
+
             } else if ("update".equals(action)) {
-                int customerId = Integer.parseInt(request.getParameter("customerId"));
-                String firstName = request.getParameter("firstName");
-                String lastName = request.getParameter("lastName");
-                String email = request.getParameter("email");
-                String phone = request.getParameter("phone");
+                // Update existing customer
                 Customer customer = new Customer();
-                customer.setCustomerId(customerId);
-                customer.setFirstName(firstName);
-                customer.setLastName(lastName);
-                customer.setEmail(email);
-                customer.setPhone(phone);
+                customer.setCustomerId(Integer.parseInt(request.getParameter("customerId")));
+                customer.setFirstName(request.getParameter("firstName"));
+                customer.setLastName(request.getParameter("lastName"));
+                customer.setEmail(request.getParameter("email"));
+                customer.setPhone(request.getParameter("phone"));
+                customer.setAddress(request.getParameter("address"));
                 customerService.updateCustomer(customer);
-                request.setAttribute("successMessage", "Customer updated successfully.");
+                request.setAttribute("message", "Customer updated successfully");
+
+            } else if ("delete".equals(action)) {
+                // Delete customer
+                int customerId = Integer.parseInt(request.getParameter("customerId"));
+                customerService.deleteCustomer(customerId);
+                request.setAttribute("message", "Customer deleted successfully");
             }
+
+            // Refresh customer list after action
             List<Customer> customerList = customerService.getAllCustomers();
             request.setAttribute("customerList", customerList);
             request.getRequestDispatcher("manageCustomers.jsp").forward(request, response);
+
         } catch (SQLException e) {
             request.setAttribute("error", "Database error: " + e.getMessage());
             request.getRequestDispatcher("manageCustomers.jsp").forward(request, response);

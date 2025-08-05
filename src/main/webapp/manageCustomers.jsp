@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pahanedu Bookshop - Manage Customers</title>
+    <title>Manage Customers - Pahanedu Bookshop</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
 
@@ -29,16 +29,10 @@
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 900px;
+            max-width: 1000px;
             width: 90%;
             text-align: center;
-            animation: fadeIn 1s ease-in-out;
             margin: 2rem;
-        }
-
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
         }
 
         h2 {
@@ -48,40 +42,42 @@
             margin-bottom: 1rem;
         }
 
-        .error {
+        .error, .message {
             color: #B22222;
             font-size: 1rem;
             margin-bottom: 1rem;
         }
 
-        .success {
-            color: #228B22;
-            font-size: 1rem;
-            margin-bottom: 1rem;
+        .message {
+            color: #006400;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
+            margin-bottom: 2rem;
         }
 
         th, td {
             padding: 0.75rem;
             border: 1px solid #D2B48C;
-            color: #6B4E31;
+            text-align: left;
         }
 
         th {
-            background-color: #D2B48C;
-            font-family: 'Playfair Display', serif;
+            background-color: #8B4513;
+            color: #FFF8DC;
         }
 
-        .form-container {
+        tr:nth-child(even) {
+            background-color: #F5F5DC;
+        }
+
+        form {
             margin-bottom: 2rem;
         }
 
-        .form-container label {
+        label {
             display: block;
             text-align: left;
             font-size: 1rem;
@@ -89,7 +85,7 @@
             margin-bottom: 0.5rem;
         }
 
-        .form-container input, .form-container textarea {
+        input[type="text"], textarea {
             width: 100%;
             padding: 0.75rem;
             margin-bottom: 1rem;
@@ -97,21 +93,13 @@
             border-radius: 5px;
             font-size: 1rem;
             box-sizing: border-box;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .form-container textarea {
-            resize: vertical;
-            min-height: 100px;
+        textarea {
+            height: 100px;
         }
 
-        .form-container input:focus, .form-container textarea:focus {
-            outline: none;
-            border-color: #8B4513;
-            box-shadow: 0 0 5px rgba(139, 69, 19, 0.5);
-        }
-
-        .form-container button, .delete-btn, .back-btn {
+        input[type="submit"] {
             padding: 0.75rem;
             background-color: #8B4513;
             color: #FFF8DC;
@@ -119,11 +107,19 @@
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
-            transition: background-color 0.3s ease;
         }
 
-        .form-container button:hover, .delete-btn:hover, .back-btn:hover {
+        input[type="submit"]:hover {
             background-color: #6B4E31;
+        }
+
+        a {
+            color: #8B4513;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 600px) {
@@ -139,29 +135,33 @@
 </head>
 <body>
     <div class="container">
-        <h2>Pahanedu Bookshop - Manage Customers</h2>
+        <h2>Manage Customers</h2>
         <% if (request.getAttribute("error") != null) { %>
             <p class="error"><%= request.getAttribute("error") %></p>
         <% } %>
-        <% if (request.getAttribute("successMessage") != null) { %>
-            <p class="success"><%= request.getAttribute("successMessage") %></p>
+        <% if (request.getAttribute("message") != null) { %>
+            <p class="message"><%= request.getAttribute("message") %></p>
         <% } %>
-        <div class="form-container">
-            <form action="manageCustomers" method="post">
-                <input type="hidden" name="action" value="add">
-                <label for="firstName">First Name</label>
-                <input type="text" name="firstName" id="firstName" required>
-                <label for="lastName">Last Name</label>
-                <input type="text" name="lastName" id="lastName" required>
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" required>
-                <label for="phone">Phone</label>
-                <input type="text" name="phone" id="phone" required>
-                <label for="address">Address</label>
-                <textarea name="address" id="address" required></textarea>
-                <button type="submit">Add Customer</button>
-            </form>
-        </div>
+
+        <!-- Add Customer Form -->
+        <h3>Add New Customer</h3>
+        <form action="${pageContext.request.contextPath}/manageCustomers" method="post">
+            <input type="hidden" name="action" value="add">
+            <label for="firstName">First Name</label>
+            <input type="text" name="firstName" id="firstName" required>
+            <label for="lastName">Last Name</label>
+            <input type="text" name="lastName" id="lastName" required>
+            <label for="email">Email</label>
+            <input type="text" name="email" id="email" required>
+            <label for="phone">Phone</label>
+            <input type="text" name="phone" id="phone" required>
+            <label for="address">Address</label>
+            <textarea name="address" id="address" required></textarea>
+            <input type="submit" value="Add Customer">
+        </form>
+
+        <!-- Customer List -->
+        <h3>Customer List</h3>
         <% List<Customer> customerList = (List<Customer>) request.getAttribute("customerList"); %>
         <% if (customerList != null && !customerList.isEmpty()) { %>
             <table>
@@ -172,7 +172,7 @@
                     <th>Email</th>
                     <th>Phone</th>
                     <th>Address</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
                 <% for (Customer customer : customerList) { %>
                     <tr>
@@ -183,11 +183,12 @@
                         <td><%= customer.getPhone() %></td>
                         <td><%= customer.getAddress() %></td>
                         <td>
-                            <form action="manageCustomers" method="post" style="display:inline;">
+                            <form action="${pageContext.request.contextPath}/manageCustomers" method="post" style="display:inline;">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="customerId" value="<%= customer.getCustomerId() %>">
-                                <button type="submit" class="delete-btn">Delete</button>
+                                <input type="submit" value="Delete" onclick="return confirm('Are you sure?');">
                             </form>
+                            <a href="${pageContext.request.contextPath}/editCustomer.jsp?customerId=<%= customer.getCustomerId() %>">Edit</a>
                         </td>
                     </tr>
                 <% } %>
@@ -195,7 +196,7 @@
         <% } else { %>
             <p>No customers found.</p>
         <% } %>
-        <button class="back-btn" onclick="window.location.href='adminDashboard.jsp'">Back to Dashboard</button>
+        <a href="${pageContext.request.contextPath}/adminDashboard.jsp">Back to Dashboard</a>
     </div>
 </body>
 </html>

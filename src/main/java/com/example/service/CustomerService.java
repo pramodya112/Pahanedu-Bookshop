@@ -13,11 +13,7 @@ public class CustomerService {
     }
 
     public List<Customer> getAllCustomers() throws SQLException {
-        return customerDao.findAllCustomers();
-    }
-
-    public Customer getCustomerById(int customerId) throws SQLException {
-        return customerDao.findCustomerById(customerId);
+        return customerDao.getAllCustomers();
     }
 
     public void addCustomer(Customer customer) throws SQLException {

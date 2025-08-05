@@ -23,6 +23,7 @@ C:\java_assignmnet\login_system\src\main\java\com\example\control\ManageItemsCon
 C:\java_assignmnet\login_system\src\main\java\com\example\service\ItemService.java
 C:\java_assignmnet\login_system\src\main\java\com\example\dao\ItemDao.java
 C:\java_assignmnet\login_system\src\main\java\com\example\dao\BillDao.java
+C:\java_assignmnet\login_system\src\main\java\com\example\dao\LogDao.java
 C:\java_assignmnet\login_system\src\main\java\com\example\control\BillControl.java
 C:\java_assignmnet\login_system\src\main\java\com\example\dao\UserDao.java
 C:\java_assignmnet\login_system\src\main\java\com\example\model\BillItem.java
