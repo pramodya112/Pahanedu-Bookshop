@@ -1,0 +1,3 @@
+com\example\model\Customer.class
+com\example\service\UserService.class
+com\example\control\AuthFilter.class

@@ -89,7 +89,7 @@
             margin-bottom: 0.5rem;
         }
 
-        .form-container input, .form-container textarea {
+        .form-container input {
             width: 100%;
             padding: 0.75rem;
             margin-bottom: 1rem;
@@ -100,18 +100,13 @@
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .form-container textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-container input:focus, .form-container textarea:focus {
+        .form-container input:focus {
             outline: none;
             border-color: #8B4513;
             box-shadow: 0 0 5px rgba(139, 69, 19, 0.5);
         }
 
-        .form-container button, .update-btn, .back-btn {
+        .form-container button, .delete-btn, .back-btn {
             padding: 0.75rem;
             background-color: #8B4513;
             color: #FFF8DC;
@@ -120,15 +115,21 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin: 0 0.25rem;
         }
 
-        .form-container button:hover, .update-btn:hover, .back-btn:hover {
+        .form-container button:hover, .delete-btn:hover, .back-btn:hover {
             background-color: #6B4E31;
         }
 
-        .stock-form {
-            display: inline-block;
-            margin: 0;
+        a.edit-link {
+            color: #8B4513;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        a.edit-link:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 600px) {
@@ -152,16 +153,14 @@
             <p class="success"><%= request.getAttribute("successMessage") %></p>
         <% } %>
         <div class="form-container">
-            <form action="StaffItemControl" method="post">
+            <form action="staffManageItems" method="post">
                 <input type="hidden" name="action" value="add">
-                <label for="name">Item Name</label>
-                <input type="text" name="name" id="name" required>
-                <label for="description">Description</label>
-                <textarea name="description" id="description" required></textarea>
+                <label for="title">Book Title</label>
+                <input type="text" name="title" id="title" required>
                 <label for="price">Price ($)</label>
                 <input type="number" step="0.01" name="price" id="price" required>
-                <label for="stockQuantity">Stock Quantity</label>
-                <input type="number" name="stockQuantity" id="stockQuantity" required>
+                <label for="quantity">Quantity</label>
+                <input type="number" name="quantity" id="quantity" required>
                 <button type="submit">Add Item</button>
             </form>
         </div>
@@ -170,25 +169,23 @@
             <table>
                 <tr>
                     <th>ID</th>
-                    <th>Name</th>
-                    <th>Description</th>
+                    <th>Title</th>
                     <th>Price ($)</th>
-                    <th>Stock Quantity</th>
-                    <th>Update Stock</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
                 </tr>
                 <% for (Item item : itemList) { %>
                     <tr>
                         <td><%= item.getItemId() %></td>
-                        <td><%= item.getName() %></td>
-                        <td><%= item.getDescription() %></td>
+                        <td><%= item.getTitle() %></td>
                         <td><%= String.format("%.2f", item.getPrice()) %></td>
-                        <td><%= item.getStockQuantity() %></td>
+                        <td><%= item.getQuantity() %></td>
                         <td>
-                            <form action="StaffItemControl" method="post" class="stock-form">
-                                <input type="hidden" name="action" value="update">
+                            <a href="staffManageItems?action=edit&itemId=<%= item.getItemId() %>" class="edit-link">Edit</a>
+                            <form action="staffManageItems" method="post" style="display:inline;">
+                                <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="itemId" value="<%= item.getItemId() %>">
-                                <input type="number" name="stockQuantity" value="<%= item.getStockQuantity() %>" required style="width: 80px;">
-                                <button type="submit" class="update-btn">Update</button>
+                                <button type="submit" class="delete-btn">Delete</button>
                             </form>
                         </td>
                     </tr>

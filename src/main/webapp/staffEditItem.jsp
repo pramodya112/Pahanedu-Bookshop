@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.example.model.Item" %>
-<%@ page import="com.example.service.ItemService" %>
+<%@ page import="com.example.service.StaffService" %>
 <%@ page import="java.sql.SQLException" %>
 <!DOCTYPE html>
 <html>
@@ -98,8 +98,8 @@
             String itemId = request.getParameter("itemId");
             Item item = null;
             try {
-                ItemService itemService = new ItemService();
-                item = itemService.getItemById(Integer.parseInt(itemId));
+                StaffService staffService = new StaffService();
+                item = staffService.getItemById(Integer.parseInt(itemId));
             } catch (SQLException e) {
                 request.setAttribute("error", "Error loading item: " + e.getMessage());
             } catch (NumberFormatException e) {
@@ -110,15 +110,11 @@
             <p class="error"><%= request.getAttribute("error") %></p>
         <% } %>
         <% if (item != null) { %>
-            <form action="${pageContext.request.contextPath}/manageItems" method="post">
+            <form action="${pageContext.request.contextPath}/staffManageItems" method="post">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="itemId" value="<%= item.getItemId() %>">
                 <label for="title">Book Title</label>
                 <input type="text" name="title" id="title" value="<%= item.getTitle() %>" required>
-                <label for="author">Author</label>
-                <input type="text" name="author" id="author" value="<%= item.getAuthor() %>" required>
-                <label for="genre">Genre</label>
-                <input type="text" name="genre" id="genre" value="<%= item.getGenre() %>" required>
                 <label for="price">Price ($)</label>
                 <input type="number" step="0.01" name="price" id="price" value="<%= String.format("%.2f", item.getPrice()) %>" required>
                 <label for="quantity">Quantity</label>
@@ -128,7 +124,7 @@
         <% } else { %>
             <p class="error">Item not found.</p>
         <% } %>
-        <a href="${pageContext.request.contextPath}/manageItems">Back to Manage Items</a>
+        <a href="${pageContext.request.contextPath}/staffManageItems">Back to Manage Items</a>
     </div>
 </body>
 </html>

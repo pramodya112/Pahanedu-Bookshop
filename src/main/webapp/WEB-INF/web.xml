@@ -21,12 +21,20 @@
         <url-pattern>/manageStaff</url-pattern>
     </servlet-mapping>
     <servlet>
-        <servlet-name>ManageItemsControl</servlet-name>
-        <servlet-class>com.example.control.ManageItemsControl</servlet-class>
+        <servlet-name>StaffManageCustomersControl</servlet-name>
+        <servlet-class>com.example.control.StaffManageCustomersControl</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ManageItemsControl</servlet-name>
-        <url-pattern>/manageItems</url-pattern>
+        <servlet-name>StaffManageCustomersControl</servlet-name>
+        <url-pattern>/staffManageCustomers</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>StaffManageItemsControl</servlet-name>
+        <servlet-class>com.example.control.StaffManageItemsControl</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StaffManageItemsControl</servlet-name>
+        <url-pattern>/staffManageItems</url-pattern>
     </servlet-mapping>
     <welcome-file-list>
         <welcome-file>welcome.jsp</welcome-file>

@@ -1,7 +1,9 @@
 package com.example.service;
 
 import com.example.dao.CustomerDao;
+import com.example.dao.DatabaseConnection;
 import com.example.model.Customer;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -9,7 +11,8 @@ public class CustomerService {
     private final CustomerDao customerDao;
 
     public CustomerService() {
-        this.customerDao = new CustomerDao();
+        Connection connection = DatabaseConnection.getConnection();
+        this.customerDao = new CustomerDao(connection);
     }
 
     public List<Customer> getAllCustomers() throws SQLException {

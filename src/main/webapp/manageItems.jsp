@@ -89,7 +89,7 @@
             margin-bottom: 0.5rem;
         }
 
-        .form-container input, .form-container textarea {
+        .form-container input {
             width: 100%;
             padding: 0.75rem;
             margin-bottom: 1rem;
@@ -100,12 +100,7 @@
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .form-container textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .form-container input:focus, .form-container textarea:focus {
+        .form-container input:focus {
             outline: none;
             border-color: #8B4513;
             box-shadow: 0 0 5px rgba(139, 69, 19, 0.5);

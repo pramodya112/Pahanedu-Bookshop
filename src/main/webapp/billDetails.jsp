@@ -1,14 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.example.model.Bill" %>
+<%@ page import="com.example.model.BillItem" %>
 <%@ page import="com.example.model.Customer" %>
+<%@ page import="com.example.model.Item" %>
+<%@ page import="com.example.service.StaffService" %>
 <%@ page import="java.util.List" %>
-<%@ page import="java.util.Map" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pahanedu Bookshop - View Bills</title>
+    <title>Pahanedu Bookshop - Bill Details</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
 
@@ -31,7 +33,7 @@
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 900px;
+            max-width: 600px;
             width: 90%;
             text-align: center;
             margin: 2rem;
@@ -50,6 +52,12 @@
             margin-bottom: 1rem;
         }
 
+        p {
+            color: #6B4E31;
+            font-size: 1rem;
+            margin: 0.5rem 0;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -65,15 +73,6 @@
         th {
             background-color: #D2B48C;
             font-family: 'Playfair Display', serif;
-        }
-
-        .details-link {
-            color: #8B4513;
-            text-decoration: none;
-        }
-
-        .details-link:hover {
-            text-decoration: underline;
         }
 
         .back-btn {
@@ -104,36 +103,45 @@
 </head>
 <body>
     <div class="container">
-        <h2>Pahanedu Bookshop - View Bills</h2>
+        <h2>Pahanedu Bookshop - Bill Details</h2>
         <% if (request.getAttribute("error") != null) { %>
             <p class="error"><%= request.getAttribute("error") %></p>
         <% } %>
-        <% List<Bill> billList = (List<Bill>) request.getAttribute("billList"); %>
-        <% Map<Integer, Customer> customerMap = (Map<Integer, Customer>) request.getAttribute("customerMap"); %>
-        <% if (billList != null && !billList.isEmpty()) { %>
-            <table>
-                <tr>
-                    <th>Bill ID</th>
-                    <th>Customer Name</th>
-                    <th>Total Amount ($)</th>
-                    <th>Bill Date</th>
-                    <th>Action</th>
-                </tr>
-                <% for (Bill bill : billList) { %>
-                    <% Customer customer = customerMap.get(bill.getCustomerId()); %>
+        <% Bill bill = (Bill) request.getAttribute("bill"); %>
+        <% if (bill != null) { %>
+            <% StaffService staffService = new StaffService(); %>
+            <% Customer customer = staffService.getCustomerById(bill.getCustomerId()); %>
+            <p><strong>Bill ID:</strong> <%= bill.getBillId() %></p>
+            <p><strong>Customer:</strong> <%= customer != null ? customer.getFirstName() + " " + customer.getLastName() : "Unknown" %></p>
+            <p><strong>Email:</strong> <%= customer != null ? customer.getEmail() : "N/A" %></p>
+            <p><strong>Total Amount:</strong> Rs<%= String.format("%.2f", bill.getTotalAmount()) %></p>
+            <p><strong>Bill Date:</strong> <%= bill.getBillDate() != null ? bill.getBillDate() : "N/A" %></p>
+            <% List<BillItem> billItems = bill.getBillItems(); %>
+            <% if (billItems != null && !billItems.isEmpty()) { %>
+                <table>
                     <tr>
-                        <td><%= bill.getBillId() %></td>
-                        <td><%= customer != null ? customer.getFirstName() + " " + customer.getLastName() : "Unknown" %></td>
-                        <td><%= String.format("%.2f", bill.getTotalAmount()) %></td>
-                        <td><%= bill.getBillDate() != null ? bill.getBillDate() : "N/A" %></td>
-                        <td><a href="${pageContext.request.contextPath}/staffViewBillDetails?billId=<%= bill.getBillId() %>" class="details-link">View Details</a></td>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Unit Price (Rs)</th>
+                        <th>Subtotal (Rs)</th>
                     </tr>
-                <% } %>
-            </table>
+                    <% for (BillItem billItem : billItems) { %>
+                        <% Item item = staffService.getItemById(billItem.getItemId()); %>
+                        <tr>
+                            <td><%= item != null ? item.getTitle() : "Unknown" %></td>
+                            <td><%= billItem.getQuantity() %></td>
+                            <td><%= String.format("%.2f", billItem.getUnitPrice()) %></td>
+                            <td><%= String.format("%.2f", billItem.getQuantity() * billItem.getUnitPrice()) %></td>
+                        </tr>
+                    <% } %>
+                </table>
+            <% } else { %>
+                <p>No items in this bill.</p>
+            <% } %>
         <% } else { %>
-            <p>No bills found.</p>
+            <p class="error">Bill not found.</p>
         <% } %>
-        <button class="back-btn" onclick="window.location.href='staffDashboard.jsp'">Back to Dashboard</button>
+        <button class="back-btn" onclick="window.location.href='staffViewBills'">Back to Bills</button>
     </div>
 </body>
 </html>

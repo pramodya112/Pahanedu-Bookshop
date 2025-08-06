@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate Bill - Pahanedu Bookshop</title>
+    <title>Add Customer - Pahanedu Bookshop</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
 
@@ -28,21 +28,17 @@
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 1000px;
+            max-width: 600px;
             width: 90%;
             text-align: center;
             margin: 2rem;
         }
 
-        h2, h3 {
+        h2 {
             font-family: 'Playfair Display', serif;
             color: #8B4513;
             font-size: 2.5rem;
             margin-bottom: 1rem;
-        }
-
-        h3 {
-            font-size: 1.8rem;
         }
 
         .error, .message {
@@ -53,27 +49,6 @@
 
         .message {
             color: #006400;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 2rem;
-        }
-
-        th, td {
-            padding: 0.75rem;
-            border: 1px solid #D2B48C;
-            text-align: left;
-        }
-
-        th {
-            background-color: #8B4513;
-            color: #FFF8DC;
-        }
-
-        tr:nth-child(even) {
-            background-color: #F5F5DC;
         }
 
         form {
@@ -88,7 +63,7 @@
             margin-bottom: 0.5rem;
         }
 
-        input[type="text"], input[type="email"], input[type="number"], select, textarea {
+        input[type="text"], input[type="email"], textarea {
             width: 100%;
             padding: 0.75rem;
             margin-bottom: 1rem;
@@ -102,7 +77,7 @@
             height: 100px;
         }
 
-        input[type="submit"], button {
+        input[type="submit"] {
             padding: 0.75rem;
             background-color: #8B4513;
             color: #FFF8DC;
@@ -112,7 +87,7 @@
             cursor: pointer;
         }
 
-        input[type="submit"]:hover, button:hover {
+        input[type="submit"]:hover {
             background-color: #6B4E31;
         }
 
@@ -133,24 +108,18 @@
             h2 {
                 font-size: 1.8rem;
             }
-            h3 {
-                font-size: 1.5rem;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Generate Bill</h2>
+        <h2>Add New Customer</h2>
         <c:if test="${not empty error}">
             <p class="error">${error}</p>
         </c:if>
         <c:if test="${not empty successMessage}">
             <p class="message">${successMessage}</p>
         </c:if>
-
-        <!-- Add Customer Form -->
-        <h3>Add New Customer</h3>
         <form action="${pageContext.request.contextPath}/staffGenerateBill" method="post">
             <input type="hidden" name="action" value="addCustomer">
             <label for="firstName">First Name</label>
@@ -165,39 +134,7 @@
             <textarea name="address" id="address"></textarea>
             <input type="submit" value="Add Customer">
         </form>
-
-        <!-- Generate Bill Form -->
-        <h3>Select Items for Bill</h3>
-        <form action="${pageContext.request.contextPath}/staffGenerateBill" method="post">
-            <input type="hidden" name="action" value="generateBill">
-            <label for="customerId">Select Customer</label>
-            <select id="customerId" name="customerId" required>
-                <c:forEach var="customer" items="${customerList}">
-                    <option value="${customer.customerId}">${customer.firstName} ${customer.lastName}</option>
-                </c:forEach>
-            </select>
-            <table>
-                <tr>
-                    <th>Title</th>
-                    <th>Price</th>
-                    <th>Quantity Available</th>
-                    <th>Quantity to Purchase</th>
-                </tr>
-                <c:forEach var="item" items="${itemList}">
-                    <tr>
-                        <td>${item.title}</td>
-                        <td>${item.price}</td>
-                        <td>${item.quantity}</td>
-                        <td>
-                            <input type="number" name="quantities" min="0" max="${item.quantity}" value="0">
-                            <input type="hidden" name="itemIds" value="${item.itemId}">
-                        </td>
-                    </tr>
-                </c:forEach>
-            </table>
-            <input type="submit" value="Generate Bill">
-        </form>
-        <a href="${pageContext.request.contextPath}/staffDashboard">Back to Dashboard</a>
+        <a href="${pageContext.request.contextPath}/staffGenerateBill">Back to Generate Bill</a>
     </div>
 </body>
 </html>

@@ -88,7 +88,14 @@
             margin-bottom: 0.5rem;
         }
 
-        input[type="text"], input[type="email"], input[type="number"], select, textarea {
+        .customer-selection {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        select, input[type="number"] {
             width: 100%;
             padding: 0.75rem;
             margin-bottom: 1rem;
@@ -96,10 +103,6 @@
             border-radius: 5px;
             font-size: 1rem;
             box-sizing: border-box;
-        }
-
-        textarea {
-            height: 100px;
         }
 
         input[type="submit"], button {
@@ -136,6 +139,10 @@
             h3 {
                 font-size: 1.5rem;
             }
+            .customer-selection {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
@@ -149,33 +156,25 @@
             <p class="message">${successMessage}</p>
         </c:if>
 
-        <!-- Add Customer Form -->
-        <h3>Add New Customer</h3>
-        <form action="${pageContext.request.contextPath}/staffGenerateBill" method="post">
-            <input type="hidden" name="action" value="addCustomer">
-            <label for="firstName">First Name</label>
-            <input type="text" name="firstName" id="firstName" required>
-            <label for="lastName">Last Name</label>
-            <input type="text" name="lastName" id="lastName" required>
-            <label for="email">Email</label>
-            <input type="email" name="email" id="email">
-            <label for="phone">Phone</label>
-            <input type="text" name="phone" id="phone">
-            <label for="address">Address</label>
-            <textarea name="address" id="address"></textarea>
-            <input type="submit" value="Add Customer">
-        </form>
-
         <!-- Generate Bill Form -->
         <h3>Select Items for Bill</h3>
         <form action="${pageContext.request.contextPath}/staffGenerateBill" method="post">
             <input type="hidden" name="action" value="generateBill">
-            <label for="customerId">Select Customer</label>
-            <select id="customerId" name="customerId" required>
-                <c:forEach var="customer" items="${customerList}">
-                    <option value="${customer.customerId}">${customer.firstName} ${customer.lastName}</option>
-                </c:forEach>
-            </select>
+            <div class="customer-selection">
+                <div>
+                    <label for="customerId">Select Customer</label>
+                    <select id="customerId" name="customerId" required>
+                        <c:forEach var="customer" items="${customerList}">
+                            <option value="${customer.customerId}">${customer.firstName} ${customer.lastName}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div>
+                    <a href="${pageContext.request.contextPath}/addCustomer.jsp">
+                        <button type="button">Add New Customer</button>
+                    </a>
+                </div>
+            </div>
             <table>
                 <tr>
                     <th>Title</th>
