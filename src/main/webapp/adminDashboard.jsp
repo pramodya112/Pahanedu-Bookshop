@@ -106,8 +106,11 @@
 <body>
     <div class="dashboard-container">
         <h2>Pahanedu Bookshop - Admin Dashboard</h2>
+<<<<<<< HEAD
         <p>Debug: Staff = <%= session.getAttribute("staff") %></p>
         <p>Debug: Role = <%= session.getAttribute("staff") != null ? ((Staff)session.getAttribute("staff")).getRole() : "None" %></p>
+=======
+>>>>>>> b1c7f666f3631571e7b4cc3142f2f4133f65a919
         <% Staff staff = (Staff) session.getAttribute("staff"); %>
         <p>Session Username: <%= staff != null ? staff.getUsername() : "None" %></p>
         <p>Session Role: <%= staff != null ? staff.getRole() : "None" %></p>

@@ -13,6 +13,7 @@
         <url-pattern>/LoginControl</url-pattern>
     </servlet-mapping>
     <servlet>
+<<<<<<< HEAD
     <servlet-name>AdminDashboard</servlet-name>
     <jsp-file>/adminDashboard.jsp</jsp-file>
 </servlet>
@@ -29,6 +30,8 @@
     <url-pattern>/adminDashboard</url-pattern>
 </filter-mapping>
     <servlet>
+=======
+>>>>>>> b1c7f666f3631571e7b4cc3142f2f4133f65a919
         <servlet-name>ManageStaffControl</servlet-name>
         <servlet-class>com.example.control.ManageStaffControl</servlet-class>
     </servlet>
