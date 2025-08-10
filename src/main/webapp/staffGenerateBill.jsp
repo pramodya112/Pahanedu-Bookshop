@@ -147,6 +147,7 @@
     </style>
 </head>
 <body>
+
     <div class="container">
         <h2>Generate Bill</h2>
         <c:if test="${not empty error}">

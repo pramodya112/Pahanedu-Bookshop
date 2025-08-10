@@ -80,6 +80,7 @@
             <a href="${pageContext.request.contextPath}/staffManageItems">Manage Items</a>
             <a href="${pageContext.request.contextPath}/staffGenerateBill">Generate Bill</a>
             <a href="${pageContext.request.contextPath}/ViewBillsControl">View Bills</a>
+            <a href="help.jsp">Help Section</a>
             <a href="${pageContext.request.contextPath}/logout">Logout</a>
         </div>
     </div>

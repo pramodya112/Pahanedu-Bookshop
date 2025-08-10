@@ -7,6 +7,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession; // New Import
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,6 +24,18 @@ public class ManageItemsControl extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+
+        // Retrieve and remove session messages for one-time display
+        if (session.getAttribute("message") != null) {
+            request.setAttribute("message", session.getAttribute("message"));
+            session.removeAttribute("message");
+        }
+        if (session.getAttribute("error") != null) {
+            request.setAttribute("error", session.getAttribute("error"));
+            session.removeAttribute("error");
+        }
+
         String action = request.getParameter("action");
         try {
             if ("edit".equals(action)) {
@@ -44,6 +57,7 @@ public class ManageItemsControl extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+        HttpSession session = request.getSession(); // Get the session
 
         try {
             if ("add".equals(action)) {
@@ -54,7 +68,7 @@ public class ManageItemsControl extends HttpServlet {
                 item.setPrice(Double.parseDouble(request.getParameter("price")));
                 item.setQuantity(Integer.parseInt(request.getParameter("quantity")));
                 itemService.addItem(item);
-                request.setAttribute("successMessage", "Item added successfully");
+                session.setAttribute("message", "Item added successfully");
             } else if ("update".equals(action)) {
                 Item item = new Item();
                 item.setItemId(Integer.parseInt(request.getParameter("itemId")));
@@ -64,19 +78,22 @@ public class ManageItemsControl extends HttpServlet {
                 item.setPrice(Double.parseDouble(request.getParameter("price")));
                 item.setQuantity(Integer.parseInt(request.getParameter("quantity")));
                 itemService.updateItem(item);
-                request.setAttribute("successMessage", "Item updated successfully");
+                session.setAttribute("message", "Item updated successfully");
             } else if ("delete".equals(action)) {
                 int itemId = Integer.parseInt(request.getParameter("itemId"));
                 itemService.deleteItem(itemId);
-                request.setAttribute("successMessage", "Item deleted successfully");
+                session.setAttribute("message", "Item deleted successfully");
             }
 
-            List<Item> itemList = itemService.getAllItems();
-            request.setAttribute("itemList", itemList);
-            request.getRequestDispatcher("manageItems.jsp").forward(request, response);
+            // Redirect back to the doGet method to refresh the page and display the message
+            response.sendRedirect(request.getContextPath() + "/manageItems");
+            
         } catch (SQLException e) {
-            request.setAttribute("error", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("manageItems.jsp").forward(request, response);
+            session.setAttribute("error", "Database error: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/manageItems");
+        } catch (NumberFormatException e) {
+            session.setAttribute("error", "Invalid number format for price or quantity.");
+            response.sendRedirect(request.getContextPath() + "/manageItems");
         }
     }
 }

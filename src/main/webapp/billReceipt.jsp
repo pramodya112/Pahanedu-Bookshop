@@ -1,11 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page import="com.example.model.Bill" %>
-<%@ page import="com.example.model.Item" %>
 <%@ page import="com.example.model.Customer" %>
-<%@ page import="com.example.service.StaffService" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.sql.SQLException" %>
-<%@ page import="java.util.Date" %>
+<%@ page import="com.example.model.ReceiptItem" %> <%-- Import the new class --%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -115,52 +112,54 @@
     </style>
 </head>
 <body>
+<script>
+        window.onload = function() {
+            // Get the message from the request scope
+            var message = '<%= request.getAttribute("message") %>';
+            
+            if (message && message.trim() !== 'null') {
+                alert(message);
+            }
+        };
+    </script>
     <div class="container">
         <h2>Pahanedu Bookshop - Bill Receipt</h2>
-        <% if (request.getAttribute("successMessage") != null) { %>
-            <p class="success"><%= request.getAttribute("successMessage") %></p>
-        <% } %>
-        <% if (request.getAttribute("error") != null) { %>
-            <p class="error"><%= request.getAttribute("error") %></p>
-        <% } %>
-        <% 
-            Bill bill = (Bill) request.getAttribute("bill");
-            List<Item> selectedItems = (List<Item>) request.getAttribute("selectedItems");
-            String[] quantities = (String[]) request.getAttribute("quantities");
-            Customer customer = null;
-            try {
-                StaffService staffService = new StaffService();
-                customer = staffService.getCustomerById(bill.getCustomerId());
-            } catch (SQLException e) {
-                request.setAttribute("error", "Error loading customer: " + e.getMessage());
-            }
-        %>
-        <% if (customer != null) { %>
-            <p><strong>Customer:</strong> <%= customer.getFirstName() %> <%= customer.getLastName() %></p>
-            <p><strong>Email:</strong> <%= customer.getEmail() %></p>
-            <p><strong>Bill Date:</strong> <%= bill.getBillDate() != null ? bill.getBillDate() : new Date() %></p>
-            <table>
-                <tr>
-                    <th>Title</th>
-                    <th>Price ($)</th>
-                    <th>Quantity</th>
-                    <th>Subtotal (Rs)</th>
-                </tr>
-                <% if (selectedItems != null && quantities != null) { %>
-                    <% for (int i = 0; i < selectedItems.size(); i++) { %>
+        <c:if test="${not empty successMessage}">
+            <p class="success">${successMessage}</p>
+        </c:if>
+        <c:if test="${not empty error}">
+            <p class="error">${error}</p>
+        </c:if>
+
+        <c:choose>
+            <c:when test="${not empty bill and not empty customer}">
+                <p><strong>Customer:</strong> ${customer.firstName} ${customer.lastName}</p>
+                <p><strong>Email:</strong> ${customer.email}</p>
+                <p><strong>Bill Date:</strong> ${bill.billDate}</p>
+                
+                <table>
+                    <tr>
+                        <th>Title</th>
+                        <th>Price (Rs)</th>
+                        <th>Quantity</th>
+                        <th>Subtotal (Rs)</th>
+                    </tr>
+                    <c:forEach var="receiptItem" items="${receiptItems}">
                         <tr>
-                            <td><%= selectedItems.get(i).getTitle() %></td>
-                            <td><%= String.format("%.2f", selectedItems.get(i).getPrice()) %></td>
-                            <td><%= quantities[i] %></td>
-                            <td><%= String.format("%.2f", selectedItems.get(i).getPrice() * Integer.parseInt(quantities[i])) %></td>
+                            <td>${receiptItem.item.title}</td>
+                            <td>${receiptItem.item.price}</td>
+                            <td>${receiptItem.quantity}</td>
+                            <td>${receiptItem.item.price * receiptItem.quantity}</td>
                         </tr>
-                    <% } %>
-                <% } %>
-            </table>
-            <p class="total">Total Amount: Rs<%= String.format("%.2f", bill.getTotalAmount()) %></p>
-        <% } else { %>
-            <p class="error">Customer not found.</p>
-        <% } %>
+                    </c:forEach>
+                </table>
+                <p class="total">Total Amount: Rs${bill.totalAmount}</p>
+            </c:when>
+            <c:otherwise>
+                <p class="error">Bill or Customer details not found.</p>
+            </c:otherwise>
+        </c:choose>
+        
         <button class="print-btn" onclick="window.print()">Print Receipt</button>
         <button class="back-btn" onclick="window.location.href='staffGenerateBill'">Back to Generate Bill</button>
     </div>

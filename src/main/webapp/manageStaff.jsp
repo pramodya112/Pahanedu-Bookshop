@@ -95,7 +95,7 @@
             box-sizing: border-box;
         }
 
-        input[type="submit"] {
+        input[type="submit"], .button-link {
             padding: 0.75rem;
             background-color: #8B4513;
             color: #FFF8DC;
@@ -103,18 +103,22 @@
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
+            text-decoration: none; /* Add this to remove underline for links */
+            display: inline-block; /* Make the link behave like a block element for padding */
+            text-align: center;
+            margin-top: 1rem;
         }
 
-        input[type="submit"]:hover {
+        input[type="submit"]:hover, .button-link:hover {
             background-color: #6B4E31;
         }
-
-        a {
+        
+        a.edit-link {
             color: #8B4513;
             text-decoration: none;
         }
 
-        a:hover {
+        a.edit-link:hover {
             text-decoration: underline;
         }
 
@@ -130,6 +134,21 @@
     </style>
 </head>
 <body>
+<script>
+    window.onload = function() {
+        // Retrieve messages from the request attribute
+        var message = '<%= request.getAttribute("message") %>';
+        var error = '<%= request.getAttribute("error") %>';
+        
+        if (message && message.trim() !== 'null') {
+            alert(message);
+        }
+        if (error && error.trim() !== 'null') {
+            alert('Error: ' + error);
+        }
+    };
+</script>
+
     <div class="container">
         <h2>Manage Staff</h2>
         <% if (request.getAttribute("error") != null) { %>
@@ -139,7 +158,6 @@
             <p class="message"><%= request.getAttribute("message") %></p>
         <% } %>
 
-        <!-- Add Staff Form -->
         <h3>Add New Staff</h3>
         <form action="${pageContext.request.contextPath}/manageStaff" method="post">
             <input type="hidden" name="action" value="add">
@@ -156,7 +174,6 @@
             <input type="submit" value="Add Staff">
         </form>
 
-        <!-- Staff List -->
         <h3>Staff List</h3>
         <% List<Staff> staffList = (List<Staff>) request.getAttribute("staffList"); %>
         <% if (staffList != null && !staffList.isEmpty()) { %>
@@ -182,7 +199,7 @@
                                 <input type="hidden" name="staffId" value="<%= staff.getStaffId() %>">
                                 <input type="submit" value="Delete" onclick="return confirm('Are you sure?');">
                             </form>
-                            <a href="${pageContext.request.contextPath}/editStaff.jsp?staffId=<%= staff.getStaffId() %>">Edit</a>
+                            <a href="${pageContext.request.contextPath}/editStaff.jsp?staffId=<%= staff.getStaffId() %>" class="edit-link">Edit</a>
                         </td>
                     </tr>
                 <% } %>
@@ -190,7 +207,7 @@
         <% } else { %>
             <p>No staff found.</p>
         <% } %>
-        <a href="${pageContext.request.contextPath}/adminDashboard.jsp">Back to Dashboard</a>
+        <a href="${pageContext.request.contextPath}/adminDashboard.jsp" class="button-link">Back to Dashboard</a>
     </div>
 </body>
 </html>

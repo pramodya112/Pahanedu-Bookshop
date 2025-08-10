@@ -144,6 +144,20 @@
     </style>
 </head>
 <body>
+<script>
+    window.onload = function() {
+        var message = '<%= request.getAttribute("message") %>';
+        var error = '<%= request.getAttribute("error") %>';
+        
+        if (message && message.trim() !== 'null') {
+            alert(message);
+        }
+        
+        if (error && error.trim() !== 'null') {
+            alert('Error: ' + error);
+        }
+    };
+</script>
     <div class="container">
         <h2>Pahanedu Bookshop - Staff Manage Items</h2>
         <% if (request.getAttribute("error") != null) { %>

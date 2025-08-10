@@ -1,7 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.example.model.Customer" %>
-<%@ page import="com.example.service.CustomerService" %>
-<%@ page import="java.sql.SQLException" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -57,7 +55,7 @@
             margin-bottom: 0.5rem;
         }
 
-        input[type="text"], textarea {
+        input[type="text"], input[type="email"], textarea {
             width: 100%;
             padding: 0.75rem;
             margin-bottom: 1rem;
@@ -69,9 +67,10 @@
 
         textarea {
             height: 100px;
+            resize: vertical;
         }
 
-        input[type="submit"] {
+        input[type="submit"], a.button-link {
             padding: 0.75rem;
             background-color: #8B4513;
             color: #FFF8DC;
@@ -79,19 +78,13 @@
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #6B4E31;
-        }
-
-        a {
-            color: #8B4513;
             text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
 
-        a:hover {
-            text-decoration: underline;
+        input[type="submit"]:hover, a.button-link:hover {
+            background-color: #6B4E31;
         }
     </style>
 </head>
@@ -99,41 +92,36 @@
     <div class="container">
         <h2>Edit Customer</h2>
         <% 
-            String customerId = request.getParameter("customerId");
-            Customer customer = null;
-            try {
-                CustomerService customerService = new CustomerService();
-                customer = customerService.getAllCustomers().stream()
-                        .filter(c -> c.getCustomerId() == Integer.parseInt(customerId))
-                        .findFirst()
-                        .orElse(null);
-            } catch (SQLException e) {
-                request.setAttribute("error", "Error loading customer: " + e.getMessage());
+            // The servlet has already fetched the customer and set it as a request attribute.
+            // We just need to retrieve it here.
+            Customer customer = (Customer) request.getAttribute("customer");
+            if (customer == null) {
+                // If the servlet couldn't find the customer, it likely set an error message.
+                // We'll show that message.
+                customer = new Customer(); // Initialize for null-safe access
+        %>
+            <p class="error">Customer not found or an error occurred.</p>
+        <%
             }
         %>
-        <% if (request.getAttribute("error") != null) { %>
-            <p class="error"><%= request.getAttribute("error") %></p>
-        <% } %>
-        <% if (customer != null) { %>
-            <form action="${pageContext.request.contextPath}/manageCustomers" method="post">
-                <input type="hidden" name="action" value="update">
-                <input type="hidden" name="customerId" value="<%= customer.getCustomerId() %>">
-                <label for="firstName">First Name</label>
-                <input type="text" name="firstName" id="firstName" value="<%= customer.getFirstName() %>" required>
-                <label for="lastName">Last Name</label>
-                <input type="text" name="lastName" id="lastName" value="<%= customer.getLastName() %>" required>
-                <label for="email">Email</label>
-                <input type="text" name="email" id="email" value="<%= customer.getEmail() %>" required>
-                <label for="phone">Phone</label>
-                <input type="text" name="phone" id="phone" value="<%= customer.getPhone() %>" required>
-                <label for="address">Address</label>
-                <textarea name="address" id="address" required><%= customer.getAddress() %></textarea>
-                <input type="submit" value="Update Customer">
-            </form>
-        <% } else { %>
-            <p class="error">Customer not found.</p>
-        <% } %>
-        <a href="${pageContext.request.contextPath}/manageCustomers">Back to Manage Customers</a>
+        
+        <form action="manageCustomers" method="post">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="customerId" value="<%= customer.getCustomerId() %>">
+            <label for="firstName">First Name</label>
+            <input type="text" name="firstName" id="firstName" value="<%= customer.getFirstName() %>" required>
+            <label for="lastName">Last Name</label>
+            <input type="text" name="lastName" id="lastName" value="<%= customer.getLastName() %>" required>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" value="<%= customer.getEmail() %>" required>
+            <label for="phone">Phone</label>
+            <input type="text" name="phone" id="phone" value="<%= customer.getPhone() %>" required>
+            <label for="address">Address</label>
+            <textarea name="address" id="address" required><%= customer.getAddress() %></textarea>
+            <input type="submit" value="Update Customer">
+        </form>
+        <br>
+        <a href="manageCustomers" class="button-link">Back to Manage Customers</a>
     </div>
 </body>
 </html>

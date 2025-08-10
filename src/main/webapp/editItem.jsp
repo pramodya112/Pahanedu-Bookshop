@@ -67,7 +67,7 @@
             box-sizing: border-box;
         }
 
-        input[type="submit"] {
+        input[type="submit"], .button-link {
             padding: 0.75rem;
             background-color: #8B4513;
             color: #FFF8DC;
@@ -75,9 +75,12 @@
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
+            text-decoration: none; /* Remove underline from links */
+            display: inline-block; /* Make the link behave like a button */
+            text-align: center;
         }
-
-        input[type="submit"]:hover {
+        
+        input[type="submit"]:hover, .button-link:hover {
             background-color: #6B4E31;
         }
 
@@ -97,17 +100,22 @@
         <% 
             String itemId = request.getParameter("itemId");
             Item item = null;
+            String error = null;
             try {
-                ItemService itemService = new ItemService();
-                item = itemService.getItemById(Integer.parseInt(itemId));
+                if (itemId != null && !itemId.isEmpty()) {
+                    ItemService itemService = new ItemService();
+                    item = itemService.getItemById(Integer.parseInt(itemId));
+                } else {
+                    error = "Item ID is missing.";
+                }
             } catch (SQLException e) {
-                request.setAttribute("error", "Error loading item: " + e.getMessage());
+                error = "Error loading item: " + e.getMessage();
             } catch (NumberFormatException e) {
-                request.setAttribute("error", "Invalid item ID");
+                error = "Invalid item ID.";
             }
         %>
-        <% if (request.getAttribute("error") != null) { %>
-            <p class="error"><%= request.getAttribute("error") %></p>
+        <% if (error != null) { %>
+            <p class="error"><%= error %></p>
         <% } %>
         <% if (item != null) { %>
             <form action="${pageContext.request.contextPath}/manageItems" method="post">
@@ -128,7 +136,8 @@
         <% } else { %>
             <p class="error">Item not found.</p>
         <% } %>
-        <a href="${pageContext.request.contextPath}/manageItems">Back to Manage Items</a>
+        <br>
+        <a href="${pageContext.request.contextPath}/manageItems" class="button-link">Back to Manage Items</a>
     </div>
 </body>
 </html>

@@ -4,12 +4,14 @@ import com.example.model.Bill;
 import com.example.model.BillItem;
 import com.example.model.Customer;
 import com.example.model.Item;
+import com.example.model.ReceiptItem;
 import com.example.service.StaffService;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession; // New import
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,17 +30,29 @@ public class StaffGenerateBillControl extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        
+        // Retrieve and remove session messages for one-time display
+        if (session.getAttribute("message") != null) {
+            request.setAttribute("message", session.getAttribute("message"));
+            session.removeAttribute("message");
+        }
+        if (session.getAttribute("error") != null) {
+            request.setAttribute("error", session.getAttribute("error"));
+            session.removeAttribute("error");
+        }
+        
         try {
             List<Customer> customerList = staffService.getAllCustomers();
             List<Item> itemList = staffService.getAllItems();
-            System.out.println("doGet: customerList size=" + (customerList != null ? customerList.size() : 0));
-            System.out.println("doGet: itemList size=" + (itemList != null ? itemList.size() : 0));
+            
             if (customerList == null || customerList.isEmpty()) {
                 request.setAttribute("error", "No customers available. Please add a customer first.");
             }
             if (itemList == null || itemList.isEmpty()) {
                 request.setAttribute("error", "No items available. Please add items first.");
             }
+            
             request.setAttribute("customerList", customerList);
             request.setAttribute("itemList", itemList);
             request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
@@ -52,6 +66,7 @@ public class StaffGenerateBillControl extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+        HttpSession session = request.getSession();
         System.out.println("doPost action: " + action);
 
         try {
@@ -63,43 +78,28 @@ public class StaffGenerateBillControl extends HttpServlet {
                 customer.setPhone(request.getParameter("phone"));
                 customer.setAddress(request.getParameter("address"));
                 staffService.addCustomer(customer);
-                request.setAttribute("successMessage", "Customer added successfully");
-                List<Customer> customerList = staffService.getAllCustomers();
-                List<Item> itemList = staffService.getAllItems();
-                request.setAttribute("customerList", customerList);
-                request.setAttribute("itemList", itemList);
-                request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
+                session.setAttribute("message", "Customer added successfully"); // Set message in session
+                response.sendRedirect(request.getContextPath() + "/staffGenerateBill"); // Redirect
+                return;
             } else if ("generateBill".equals(action)) {
                 String customerIdStr = request.getParameter("customerId");
                 String[] itemIds = request.getParameterValues("itemIds");
                 String[] quantities = request.getParameterValues("quantities");
 
-                System.out.println("customerId: " + customerIdStr);
-                System.out.println("itemIds: " + (itemIds != null ? String.join(",", itemIds) : "null"));
-                System.out.println("quantities: " + (quantities != null ? String.join(",", quantities) : "null"));
-
                 if (customerIdStr == null || customerIdStr.isEmpty()) {
-                    request.setAttribute("error", "Please select a customer");
-                    List<Customer> customerList = staffService.getAllCustomers();
-                    List<Item> itemList = staffService.getAllItems();
-                    request.setAttribute("customerList", customerList);
-                    request.setAttribute("itemList", itemList);
-                    request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
+                    session.setAttribute("error", "Please select a customer");
+                    response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                     return;
                 }
 
                 int customerId = Integer.parseInt(customerIdStr);
                 List<BillItem> billItems = new ArrayList<>();
-                List<Item> selectedItems = new ArrayList<>();
                 double totalAmount = 0.0;
+                List<ReceiptItem> receiptItems = new ArrayList<>();
 
                 if (itemIds == null || quantities == null || itemIds.length != quantities.length) {
-                    request.setAttribute("error", "Invalid item selection or quantities");
-                    List<Customer> customerList = staffService.getAllCustomers();
-                    List<Item> itemList = staffService.getAllItems();
-                    request.setAttribute("customerList", customerList);
-                    request.setAttribute("itemList", itemList);
-                    request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
+                    session.setAttribute("error", "Invalid item selection or quantities");
+                    response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                     return;
                 }
 
@@ -107,45 +107,30 @@ public class StaffGenerateBillControl extends HttpServlet {
                     int itemId = Integer.parseInt(itemIds[i]);
                     int quantity = Integer.parseInt(quantities[i]);
                     Item item = staffService.getItemById(itemId);
-                    System.out.println("Processing itemId=" + itemId + ", quantity=" + quantity);
-                    if (item == null) {
-                        request.setAttribute("error", "Item not found for ID: " + itemId);
-                        List<Customer> customerList = staffService.getAllCustomers();
-                        List<Item> itemList = staffService.getAllItems();
-                        request.setAttribute("customerList", customerList);
-                        request.setAttribute("itemList", itemList);
-                        request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
+
+                    if (item == null || (quantity > 0 && quantity > item.getQuantity())) {
+                        session.setAttribute("error", "Insufficient stock or item not found.");
+                        response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                         return;
                     }
+                    
                     if (quantity > 0) {
-                        if (quantity > item.getQuantity()) {
-                            request.setAttribute("error", "Insufficient stock for " + item.getTitle());
-                            List<Customer> customerList = staffService.getAllCustomers();
-                            List<Item> itemList = staffService.getAllItems();
-                            request.setAttribute("customerList", customerList);
-                            request.setAttribute("itemList", itemList);
-                            request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
-                            return;
-                        }
                         BillItem billItem = new BillItem();
                         billItem.setItemId(itemId);
                         billItem.setQuantity(quantity);
                         billItem.setUnitPrice(item.getPrice());
                         billItems.add(billItem);
-                        selectedItems.add(item);
                         totalAmount += item.getPrice() * quantity;
                         item.setQuantity(item.getQuantity() - quantity);
                         staffService.updateItem(item);
+                        
+                        receiptItems.add(new ReceiptItem(item, quantity));
                     }
                 }
 
                 if (billItems.isEmpty()) {
-                    request.setAttribute("error", "No valid items selected");
-                    List<Customer> customerList = staffService.getAllCustomers();
-                    List<Item> itemList = staffService.getAllItems();
-                    request.setAttribute("customerList", customerList);
-                    request.setAttribute("itemList", itemList);
-                    request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
+                    session.setAttribute("error", "No valid items selected");
+                    response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                     return;
                 }
 
@@ -153,27 +138,33 @@ public class StaffGenerateBillControl extends HttpServlet {
                 bill.setCustomerId(customerId);
                 bill.setTotalAmount(totalAmount);
                 bill.setBillDate(new Date());
-                bill.setBillItems(billItems); // Set billItems
+                bill.setBillItems(billItems);
 
                 staffService.addBill(bill);
-
+                
+                Customer customer = staffService.getCustomerById(customerId); 
+                
                 request.setAttribute("bill", bill);
-                request.setAttribute("selectedItems", selectedItems);
-                request.setAttribute("quantities", quantities);
-                request.setAttribute("successMessage", "Bill generated successfully");
+                request.setAttribute("receiptItems", receiptItems);
+                request.setAttribute("customer", customer);
+                session.setAttribute("message", "Bill generated successfully"); // Set message in session
                 request.getRequestDispatcher("billReceipt.jsp").forward(request, response);
+                return;
             } else {
-                request.setAttribute("error", "Invalid action");
-                request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
+                session.setAttribute("error", "Invalid action");
+                response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
+                return;
             }
         } catch (SQLException e) {
             System.err.println("SQLException in doPost: " + e.getMessage());
-            request.setAttribute("error", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
+            session.setAttribute("error", "Database error: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
+            return;
         } catch (NumberFormatException e) {
             System.err.println("NumberFormatException in doPost: " + e.getMessage());
-            request.setAttribute("error", "Invalid input format: " + e.getMessage());
-            request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
+            session.setAttribute("error", "Invalid input format: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
+            return;
         }
     }
 }

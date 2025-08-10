@@ -7,6 +7,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,12 +24,36 @@ public class StaffManageItemsControl extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        
+        // Retrieve and remove session messages for one-time display
+        if (session.getAttribute("message") != null) {
+            request.setAttribute("message", session.getAttribute("message"));
+            session.removeAttribute("message");
+        }
+        if (session.getAttribute("error") != null) {
+            request.setAttribute("error", session.getAttribute("error"));
+            session.removeAttribute("error");
+        }
+        
+        String action = request.getParameter("action");
         try {
-            List<Item> itemList = staffService.getAllItems();
-            request.setAttribute("itemList", itemList);
-            request.getRequestDispatcher("staffManageItems.jsp").forward(request, response);
+            if ("edit".equals(action)) {
+                int itemId = Integer.parseInt(request.getParameter("itemId"));
+                Item item = staffService.getItemById(itemId);
+                request.setAttribute("item", item);
+                // Redirect to the staffEditItem.jsp page when action is 'edit'
+                request.getRequestDispatcher("staffEditItem.jsp").forward(request, response);
+            } else {
+                List<Item> itemList = staffService.getAllItems();
+                request.setAttribute("itemList", itemList);
+                request.getRequestDispatcher("staffManageItems.jsp").forward(request, response);
+            }
         } catch (SQLException e) {
             request.setAttribute("error", "Database error: " + e.getMessage());
+            request.getRequestDispatcher("staffManageItems.jsp").forward(request, response);
+        } catch (NumberFormatException e) {
+            request.setAttribute("error", "Invalid item ID provided for editing.");
             request.getRequestDispatcher("staffManageItems.jsp").forward(request, response);
         }
     }
@@ -36,39 +61,43 @@ public class StaffManageItemsControl extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
+        HttpSession session = request.getSession();
 
         try {
             if ("add".equals(action)) {
                 Item item = new Item();
                 item.setTitle(request.getParameter("title"));
-                item.setAuthor(""); // Staff does not set author
-                item.setGenre(""); // Staff does not set genre
+                item.setAuthor("");
+                item.setGenre("");
                 item.setPrice(Double.parseDouble(request.getParameter("price")));
                 item.setQuantity(Integer.parseInt(request.getParameter("quantity")));
                 staffService.addItem(item);
-                request.setAttribute("successMessage", "Item added successfully");
+                session.setAttribute("message", "Item added successfully");
             } else if ("update".equals(action)) {
                 Item item = new Item();
                 item.setItemId(Integer.parseInt(request.getParameter("itemId")));
                 item.setTitle(request.getParameter("title"));
-                item.setAuthor(""); // Staff does not set author
-                item.setGenre(""); // Staff does not set genre
+                item.setAuthor("");
+                item.setGenre("");
                 item.setPrice(Double.parseDouble(request.getParameter("price")));
                 item.setQuantity(Integer.parseInt(request.getParameter("quantity")));
                 staffService.updateItem(item);
-                request.setAttribute("successMessage", "Item updated successfully");
+                session.setAttribute("message", "Item updated successfully");
             } else if ("delete".equals(action)) {
                 int itemId = Integer.parseInt(request.getParameter("itemId"));
                 staffService.deleteItem(itemId);
-                request.setAttribute("successMessage", "Item deleted successfully");
+                session.setAttribute("message", "Item deleted successfully");
             }
 
-            List<Item> itemList = staffService.getAllItems();
-            request.setAttribute("itemList", itemList);
-            request.getRequestDispatcher("staffManageItems.jsp").forward(request, response);
+            // Redirect to the doGet method to refresh the page and display the message
+            response.sendRedirect(request.getContextPath() + "/staffManageItems");
+
         } catch (SQLException e) {
-            request.setAttribute("error", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("staffManageItems.jsp").forward(request, response);
+            session.setAttribute("error", "Database error: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/staffManageItems");
+        } catch (NumberFormatException e) {
+            session.setAttribute("error", "Invalid number format for price or quantity.");
+            response.sendRedirect(request.getContextPath() + "/staffManageItems");
         }
     }
 }

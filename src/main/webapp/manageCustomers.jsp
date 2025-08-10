@@ -147,22 +147,16 @@
 <body>
     <script>
         window.onload = function() {
-            <%
-                String message = (String) session.getAttribute("message");
-                String error = (String) session.getAttribute("error");
-                if (message != null) {
-            %>
-            alert("<%= message %>");
-            <%
-                    session.removeAttribute("message");
-                }
-                if (error != null) {
-            %>
-            alert("Error: <%= error %>");
-            <%
-                    session.removeAttribute("error");
-                }
-            %>
+            var message = '<%= request.getAttribute("message") %>';
+            var error = '<%= request.getAttribute("error") %>';
+            
+            if (message && message.trim() !== 'null') {
+                alert(message);
+            }
+            
+            if (error && error.trim() !== 'null') {
+                alert('Error: ' + error);
+            }
         };
     </script>
     <div class="container">
@@ -195,6 +189,10 @@
                     <th>Address</th>
                     <th>Action</th>
                 </tr>
+                <% 
+                    Staff staff = (Staff) session.getAttribute("staff"); 
+                    boolean isAdmin = staff != null && "admin".equals(staff.getRole());
+                %>
                 <% for (Customer customer : customerList) { %>
                     <tr>
                         <td><%= customer.getCustomerId() %></td>
@@ -204,12 +202,14 @@
                         <td><%= customer.getPhone() %></td>
                         <td><%= customer.getAddress() %></td>
                         <td>
-                            <a href="manageCustomers?action=edit&customerId=<%= customer.getCustomerId() %>" class="edit-link">Edit</a>
-                            <form action="manageCustomers" method="post" style="display:inline;">
-                                <input type="hidden" name="action" value="delete">
-                                <input type="hidden" name="customerId" value="<%= customer.getCustomerId() %>">
-                                <button type="submit" class="delete-btn" onclick="return confirm('Are you sure you want to delete this customer?');">Delete</button>
-                            </form>
+                           <a href="manageCustomers?action=edit&customerId=<%= customer.getCustomerId() %>" class="edit-link">Edit</a>
+                            <% if (isAdmin) { %>
+                                <form action="manageCustomers" method="post" style="display:inline;">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="customerId" value="<%= customer.getCustomerId() %>">
+                                    <button type="submit" class="delete-btn" onclick="return confirm('Are you sure you want to delete this customer?');">Delete</button>
+                                </form>
+                            <% } %>
                         </td>
                     </tr>
                 <% } %>
@@ -219,7 +219,7 @@
         <% } %>
         <% 
             Staff staff = (Staff) session.getAttribute("staff"); 
-            String dashboardUrl = "login.jsp"; // Default to login page
+            String dashboardUrl = "login.jsp";
             
             if (staff != null) {
                 if ("admin".equals(staff.getRole())) {
