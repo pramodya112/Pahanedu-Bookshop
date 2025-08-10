@@ -77,7 +77,7 @@
         <h2>Pahanedu Bookshop - Staff Dashboard</h2>
         <div class="menu">
             <a href="manageCustomers">Manage Customers</a>
-            <a href="${pageContext.request.contextPath}/staffManageCustomers">Manage Customers</a>
+            <a href="${pageContext.request.contextPath}/staffManageItems">Manage Items</a>
             <a href="${pageContext.request.contextPath}/staffGenerateBill">Generate Bill</a>
             <a href="${pageContext.request.contextPath}/ViewBillsControl">View Bills</a>
             <a href="${pageContext.request.contextPath}/logout">Logout</a>

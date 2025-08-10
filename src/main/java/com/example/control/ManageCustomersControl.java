@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet("/staffManageCustomers")
+@WebServlet("/manageCustomers")
 public class ManageCustomersControl extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private StaffService staffService;
@@ -33,11 +33,11 @@ public class ManageCustomersControl extends HttpServlet {
             } else {
                 List<Customer> customerList = staffService.getAllCustomers();
                 request.setAttribute("customerList", customerList);
-                request.getRequestDispatcher("staffManageCustomers.jsp").forward(request, response);
+                request.getRequestDispatcher("manageCustomers.jsp").forward(request, response);
             }
         } catch (SQLException e) {
             request.setAttribute("error", "Database error: " + e.getMessage());
-            request.getRequestDispatcher("staffManageCustomers.jsp").forward(request, response);
+            request.getRequestDispatcher("manageCustomers.jsp").forward(request, response);
         }
     }
 

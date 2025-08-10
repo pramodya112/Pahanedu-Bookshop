@@ -115,7 +115,7 @@
         <% } else { %>
             <p class="welcome">Welcome, <%= staff.getUsername() %>!</p>
             <div class="dashboard">
-                <a href="manageCustomers">Manage Customers</a>
+                <a href="${pageContext.request.contextPath}/manageCustomers">Manage Customers</a>
                 <a href="${pageContext.request.contextPath}/manageStaff">Manage Staff</a>
                 <a href="${pageContext.request.contextPath}/manageItems">Manage Items</a>
                 <a href="${pageContext.request.contextPath}/ViewBillsControl">View Bills</a>
