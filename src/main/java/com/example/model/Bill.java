@@ -6,10 +6,11 @@ import java.util.List;
 
 public class Bill {
     private int billId;
+    private String referenceNumber; // New field for the unique reference number
     private int customerId;
     private double totalAmount;
     private Date billDate;
-    private List<BillItem> billItems = new ArrayList<>(); // Initialize to prevent null
+    private List<BillItem> billItems = new ArrayList<>();
 
     // Getters and Setters
     public int getBillId() {
@@ -18,6 +19,14 @@ public class Bill {
 
     public void setBillId(int billId) {
         this.billId = billId;
+    }
+
+    public String getReferenceNumber() {
+        return referenceNumber;
+    }
+
+    public void setReferenceNumber(String referenceNumber) {
+        this.referenceNumber = referenceNumber;
     }
 
     public int getCustomerId() {

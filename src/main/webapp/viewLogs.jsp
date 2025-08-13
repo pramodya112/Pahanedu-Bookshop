@@ -1,13 +1,13 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%> 
 <%@ page import="java.util.List, com.example.model.Log" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Pahanedu Bookshop - View Logs</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
 
         body {
             margin: 0;
@@ -16,15 +16,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-image: url('https://images.unsplash.com/photo-1512820790803-83ca960114d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background-color: #7A8450; /* muted green background */
             font-family: 'Roboto', sans-serif;
+            color: #212529;
         }
 
         .container {
-            background-color: #FFF8DC;
+            background-color: #e3e8e2; /* light green container */
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -36,7 +34,7 @@
 
         h2 {
             font-family: 'Playfair Display', serif;
-            color: #8B4513;
+            color: #8b4513;
             font-size: 2.5rem;
             margin-bottom: 1rem;
         }
@@ -57,31 +55,36 @@
 
         th, td {
             padding: 0.75rem;
-            border: 1px solid #D2B48C;
-            color: #6B4E31;
+            border: 1px solid #c8d4c1;
+            color: black;  /* black and bold text */
+            font-weight: bold;
+            text-align: left;
         }
 
         th {
-            background-color: #D2B48C;
+            background-color: #b38996; /* pink header */
+            color: white;
             font-family: 'Playfair Display', serif;
-            color: #4A3A2B;
         }
         
         a.back-link {
             display: inline-block;
-            padding: 0.75rem;
-            background-color: #8B4513;
-            color: #FFF8DC;
+            padding: 0.75rem 1.5rem;
+            background-color: #b38996;
+            color: black;      /* black text */
+            font-weight: bold; /* bold text */
             border: none;
             border-radius: 5px;
             font-size: 1rem;
             text-decoration: none;
             margin-top: 1rem;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         a.back-link:hover {
-            background-color: #6B4E31;
+            background-color: #8b4513;
+            color: black; /* keep text black on hover */
         }
 
         @media (max-width: 600px) {
@@ -104,12 +107,15 @@
         
         <h3>Log List</h3>
         <table>
-            <tr>
-                <th>ID</th>
-                <th>Action</th>
-                <th>Username</th>
-                <th>Time</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Action</th>
+                    <th>Username</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
             <% 
                 @SuppressWarnings("unchecked")
                 List<Log> logs = (List<Log>) request.getAttribute("logs");
@@ -130,6 +136,7 @@
                 <td colspan="4">No logs found.</td>
             </tr>
             <% } %>
+            </tbody>
         </table>
         
         <a href="adminDashboard.jsp" class="back-link">Back to Dashboard</a>

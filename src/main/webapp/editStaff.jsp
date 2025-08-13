@@ -8,107 +8,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Staff - Pahanedu Bookshop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
-
         body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
+            background-color: #7A8450; /* Muted Green background */
+            font-family: 'Roboto', sans-serif;
+            color: #212529;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-image: url('https://images.unsplash.com/photo-1512820790803-83ca960114d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
         }
-
-        .container {
-            background-color: #FFF8DC;
+        .main-container {
+            background-color: #e3e8e2; /* A lighter shade of green for the container */
             padding: 2rem;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
+            max-width: 450px;
             width: 90%;
             text-align: center;
-            margin: 2rem;
+            animation: fadeIn 1s ease-in-out;
         }
-
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
         h2 {
             font-family: 'Playfair Display', serif;
-            color: #8B4513;
+            color: #8b4513; /* Brown color */
             font-size: 2rem;
             margin-bottom: 1rem;
         }
-
         .error {
             color: #B22222;
             font-size: 1rem;
             margin-bottom: 1rem;
         }
-
         label {
             display: block;
             text-align: left;
             font-size: 1rem;
-            color: #6B4E31;
+            color: #212529;
             margin-bottom: 0.5rem;
+            font-weight: bold;
         }
-
         input[type="text"], input[type="password"] {
             width: 100%;
             padding: 0.75rem;
             margin-bottom: 1rem;
-            border: 1px solid #D2B48C;
+            border: 1px solid #7A8450;
             border-radius: 5px;
             font-size: 1rem;
             box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
-
-        input[type="submit"] {
-            padding: 0.75rem;
-            background-color: #8B4513;
-            color: #FFF8DC;
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #b38996;
+            box-shadow: 0 0 5px rgba(179, 137, 150, 0.5);
+        }
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            background-color: #b38996;
+            color: black; /* Black text */
+            font-weight: bold; /* Bold text */
             border: none;
             border-radius: 5px;
             font-size: 1rem;
             cursor: pointer;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #6B4E31;
-        }
-
-        a {
-            color: #8B4513;
             text-decoration: none;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
         }
-
-        a:hover {
-            text-decoration: underline;
+        .action-btn:hover {
+            background-color: #8b4513;
+            color: black; /* Keep black text on hover */
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #b38996;
+            color: black; /* Black text */
+            font-weight: bold; /* Bold text */
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .back-btn:hover {
+            background-color: #8b4513;
+            color: black; /* Keep black text on hover */
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-container">
         <h2>Edit Staff</h2>
         <% 
-            String staffId = request.getParameter("staffId");
+            String staffIdParam = request.getParameter("staffId");
             Staff staff = null;
-            try {
-                StaffService staffService = new StaffService();
-                staff = staffService.getStaffById(Integer.parseInt(staffId));
-            } catch (SQLException e) {
-                request.setAttribute("error", "Error loading staff: " + e.getMessage());
-            } catch (NumberFormatException e) {
-                request.setAttribute("error", "Invalid staff ID");
+            String error = null;
+            if (staffIdParam != null && !staffIdParam.isEmpty()) {
+                try {
+                    StaffService staffService = new StaffService();
+                    staff = staffService.getStaffById(Integer.parseInt(staffIdParam));
+                    if (staff == null) {
+                        error = "Staff not found.";
+                    }
+                } catch (SQLException e) {
+                    error = "Error loading staff: " + e.getMessage();
+                } catch (NumberFormatException e) {
+                    error = "Invalid staff ID.";
+                }
+            } else {
+                error = "Staff ID is missing.";
             }
         %>
-        <% if (request.getAttribute("error") != null) { %>
-            <p class="error"><%= request.getAttribute("error") %></p>
+        
+        <% if (error != null) { %>
+            <p class="error"><%= error %></p>
         <% } %>
+        
         <% if (staff != null) { %>
             <form action="${pageContext.request.contextPath}/manageStaff" method="post">
                 <input type="hidden" name="action" value="update">
@@ -123,12 +150,12 @@
                 <input type="text" name="lastName" id="lastName" value="<%= staff.getLastName() %>" required>
                 <label for="role">Role</label>
                 <input type="text" name="role" id="role" value="<%= staff.getRole() %>" required>
-                <input type="submit" value="Update Staff">
+                <button type="submit" class="action-btn">Update Staff</button>
             </form>
-        <% } else { %>
-            <p class="error">Staff not found.</p>
         <% } %>
-        <a href="${pageContext.request.contextPath}/manageStaff">Back to Manage Staff</a>
+        <a href="${pageContext.request.contextPath}/manageStaff" class="back-btn">Back to Manage Staff</a>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

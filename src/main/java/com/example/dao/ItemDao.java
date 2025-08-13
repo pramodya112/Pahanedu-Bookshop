@@ -80,8 +80,16 @@ public class ItemDao {
     }
 
     public void deleteItem(int itemId) throws SQLException {
-        String query = "DELETE FROM items WHERE item_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        // First, delete all records in the 'bill_items' table that reference this item_id.
+        String deleteBillItemsQuery = "DELETE FROM bill_items WHERE item_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(deleteBillItemsQuery)) {
+            stmt.setInt(1, itemId);
+            stmt.executeUpdate();
+        }
+        
+        // Now, delete the item from the 'items' table.
+        String deleteItemQuery = "DELETE FROM items WHERE item_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(deleteItemQuery)) {
             stmt.setInt(1, itemId);
             stmt.executeUpdate();
         }

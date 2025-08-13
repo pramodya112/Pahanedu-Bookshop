@@ -11,9 +11,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession; // New import
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat; // New import
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -133,21 +134,25 @@ public class StaffGenerateBillControl extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                     return;
                 }
+                
+                // Generate a unique reference number
+                String referenceNumber = generateUniqueReferenceNumber();
 
                 Bill bill = new Bill();
+                bill.setReferenceNumber(referenceNumber); // Set the reference number
                 bill.setCustomerId(customerId);
                 bill.setTotalAmount(totalAmount);
                 bill.setBillDate(new Date());
                 bill.setBillItems(billItems);
 
-                staffService.addBill(bill);
+                staffService.addBill(bill); // Ensure this method can handle the new field
                 
                 Customer customer = staffService.getCustomerById(customerId); 
                 
                 request.setAttribute("bill", bill);
                 request.setAttribute("receiptItems", receiptItems);
                 request.setAttribute("customer", customer);
-                session.setAttribute("message", "Bill generated successfully"); // Set message in session
+                session.setAttribute("message", "Bill generated successfully");
                 request.getRequestDispatcher("billReceipt.jsp").forward(request, response);
                 return;
             } else {
@@ -166,5 +171,16 @@ public class StaffGenerateBillControl extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
             return;
         }
+    }
+    
+    /**
+     * Generates a unique, alphanumeric reference number.
+     * Example: INV-20250811103055-1234
+     */
+    private String generateUniqueReferenceNumber() {
+        String prefix = "INV-";
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        String randomPart = String.format("%04d", (int) (Math.random() * 9999));
+        return prefix + timestamp + "-" + randomPart;
     }
 }

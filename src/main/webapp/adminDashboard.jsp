@@ -6,123 +6,156 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pahanedu Bookshop - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Roboto:wght@400&display=swap');
-
         body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: url('https://images.unsplash.com/photo-1512820790803-83ca960114d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background-color: #7A8450; /* Muted Green background */
             font-family: 'Roboto', sans-serif;
+            color: #fff; /* Default text color to white */
         }
-
-        .dashboard-container {
-            background-color: #FFF8DC; /* Beige */
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            max-width: 800px;
-            width: 90%;
-            text-align: center;
-            animation: fadeIn 1s ease-in-out;
-            margin: 2rem;
+        .dashboard-header {
+            background-color: #b38996; /* A darker, richer shade of pink for the header */
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            padding: 1rem 2rem;
         }
-
-        @keyframes fadeIn {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
+        .navbar-brand {
+            color: #212529 !important;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.5rem;
+            font-weight: 700;
         }
-
-        h2 {
+        .navbar-text {
+            color: #212529 !important;
+            font-weight: 700;
+        }
+        .main-title {
+            color: #fff;
             font-family: 'Playfair Display', serif;
-            color: #8B4513; /* Saddle brown */
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-weight: 700;
         }
-
-        p {
-            color: #6B4E31; /* Darker brown */
-            font-size: 1.1rem;
-            margin: 0.5rem 0;
+        .card-option {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+            border: none;
+            background-color: #e3e8e2; /* A lighter shade of green for card */
+            border-radius: 1rem;
+            color: #212529;
         }
-
-        p.error {
+        .card-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;
+        }
+        .card-body h5 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: #8b4513;
+        }
+        .icon-box {
+            font-size: 2rem;
+            color: #8b4513;
+            font-weight: 700;
+        }
+        a {
+            text-decoration: none;
+            color: #212529;
+        }
+        a:hover {
+            color: #495057;
+        }
+        .error {
             color: #B22222; /* Firebrick red */
             font-size: 1rem;
             margin-bottom: 1rem;
         }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .dashboard a {
-            display: block;
-            padding: 1rem;
-            background-color: #D2B48C; /* Tan */
-            color: #6B4E31;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .dashboard a:hover {
-            background-color: #8B4513;
-            color: #FFF8DC;
-        }
-
-        .welcome {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.25rem;
-            color: #6B4E31;
-            margin-bottom: 1.5rem;
-        }
-
-        @media (max-width: 600px) {
-            .dashboard-container {
-                padding: 1.5rem;
-                margin: 1rem;
-            }
-            h2 {
-                font-size: 1.8rem;
-            }
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <h2>Pahanedu Bookshop - Admin Dashboard</h2>
-        <% Staff staff = (Staff) session.getAttribute("staff"); %>
-        <p>Session Username: <%= staff != null ? staff.getUsername() : "None" %></p>
-        <p>Session Role: <%= staff != null ? staff.getRole() : "None" %></p>
-        <% if (staff == null || !"admin".equals(staff.getRole())) { %>
+
+    <nav class="navbar navbar-expand-lg navbar-light dashboard-header">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">📚 Pahanedu Bookshop</a>
+            <span class="navbar-text ms-auto me-3">
+                Welcome, Admin!
+            </span>
+            <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-danger">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="mb-4 main-title">Admin Dashboard</h2>
+        
+        <% 
+            Staff staff = (Staff) session.getAttribute("staff"); 
+            if (staff == null || !"admin".equals(staff.getRole())) { 
+        %>
             <p class="error">Access denied. Please log in as admin.</p>
-            <a href="${pageContext.request.contextPath}/login.jsp" style="color: #8B4513; text-decoration: none;">Login</a>
+            <a href="${pageContext.request.contextPath}/login.jsp" class="btn btn-primary">Login</a>
         <% } else { %>
-            <p class="welcome">Welcome, <%= staff.getUsername() %>!</p>
-            <div class="dashboard">
-                <a href="${pageContext.request.contextPath}/manageCustomers">Manage Customers</a>
-                <a href="${pageContext.request.contextPath}/manageStaff">Manage Staff</a>
-                <a href="${pageContext.request.contextPath}/manageItems">Manage Items</a>
-                <a href="${pageContext.request.contextPath}/ViewBillsControl">View Bills</a>
-                <a href="${pageContext.request.contextPath}/viewLogs">View Logs</a>
-                <a href="${pageContext.request.contextPath}/logout">Logout</a>
+            <div class="row g-4">
+            
+                <div class="col-md-6 col-lg-4">
+                    <a href="${pageContext.request.contextPath}/manageCustomers" class="d-block text-decoration-none">
+                        <div class="card card-option p-4 text-center shadow-sm">
+                            <div class="card-body">
+                                <div class="icon-box mb-2">👤</div>
+                                <h5 class="card-title">Manage Customers</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <a href="${pageContext.request.contextPath}/manageStaff" class="d-block text-decoration-none">
+                        <div class="card card-option p-4 text-center shadow-sm">
+                            <div class="card-body">
+                                <div class="icon-box mb-2">👥</div>
+                                <h5 class="card-title">Manage Staff</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <a href="${pageContext.request.contextPath}/manageItems" class="d-block text-decoration-none">
+                        <div class="card card-option p-4 text-center shadow-sm">
+                            <div class="card-body">
+                                <div class="icon-box mb-2">📚</div>
+                                <h5 class="card-title">Manage Items</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <a href="${pageContext.request.contextPath}/ViewBillsControl" class="d-block text-decoration-none">
+                        <div class="card card-option p-4 text-center shadow-sm">
+                            <div class="card-body">
+                                <div class="icon-box mb-2">📋</div>
+                                <h5 class="card-title">View Bills</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <a href="${pageContext.request.contextPath}/viewLogs" class="d-block text-decoration-none">
+                        <div class="card card-option p-4 text-center shadow-sm">
+                            <div class="card-body">
+                                <div class="icon-box mb-2">📜</div>
+                                <h5 class="card-title">View Logs</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                
             </div>
         <% } %>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
