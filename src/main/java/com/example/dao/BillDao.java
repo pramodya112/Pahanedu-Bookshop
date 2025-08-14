@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class BillDao {
@@ -20,15 +19,16 @@ public class BillDao {
     public void addBill(Bill bill) throws SQLException {
         connection.setAutoCommit(false);
         try {
-            String billQuery = "INSERT INTO bills (customer_id, total_amount, bill_date) VALUES (?, ?, ?)";
+            String billQuery = "INSERT INTO bills (customer_id, total_amount, bill_date, reference_number) VALUES (?, ?, ?, ?)";
             try (PreparedStatement stmt = connection.prepareStatement(billQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 stmt.setInt(1, bill.getCustomerId());
                 stmt.setDouble(2, bill.getTotalAmount());
-                stmt.setDate(3, new java.sql.Date(bill.getBillDate() != null ? bill.getBillDate().getTime() : new Date().getTime()));
+                stmt.setDate(3, bill.getBillDate() != null ? new java.sql.Date(bill.getBillDate().getTime()) : new java.sql.Date(System.currentTimeMillis()));
+                stmt.setString(4, bill.getReferenceNumber());
                 stmt.executeUpdate();
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
-                        bill.setBillId(rs.getInt(1));
+                        bill.setBillId(rs.getInt(1)); // Set the generated bill_id back to the Bill object
                     }
                 }
             }
@@ -52,26 +52,6 @@ public class BillDao {
         }
     }
 
-    public List<Bill> findBillsByCustomerId(int customerId) throws SQLException {
-        List<Bill> bills = new ArrayList<>();
-        String query = "SELECT * FROM bills WHERE customer_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, customerId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    Bill bill = new Bill();
-                    bill.setBillId(rs.getInt("bill_id"));
-                    bill.setCustomerId(rs.getInt("customer_id"));
-                    bill.setTotalAmount(rs.getDouble("total_amount"));
-                    bill.setBillDate(rs.getDate("bill_date"));
-                    bill.setBillItems(getBillItems(bill.getBillId()));
-                    bills.add(bill);
-                }
-            }
-        }
-        return bills;
-    }
-
     public List<Bill> findAllBills() throws SQLException {
         List<Bill> bills = new ArrayList<>();
         String query = "SELECT * FROM bills";
@@ -80,6 +60,7 @@ public class BillDao {
             while (rs.next()) {
                 Bill bill = new Bill();
                 bill.setBillId(rs.getInt("bill_id"));
+                bill.setReferenceNumber(rs.getString("reference_number"));
                 bill.setCustomerId(rs.getInt("customer_id"));
                 bill.setTotalAmount(rs.getDouble("total_amount"));
                 bill.setBillDate(rs.getDate("bill_date"));
@@ -91,22 +72,44 @@ public class BillDao {
     }
 
     public Bill findBillById(int billId) throws SQLException {
-        Bill bill = null;
         String query = "SELECT * FROM bills WHERE bill_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, billId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    bill = new Bill();
+                    Bill bill = new Bill();
                     bill.setBillId(rs.getInt("bill_id"));
+                    bill.setReferenceNumber(rs.getString("reference_number"));
                     bill.setCustomerId(rs.getInt("customer_id"));
                     bill.setTotalAmount(rs.getDouble("total_amount"));
                     bill.setBillDate(rs.getDate("bill_date"));
-                    bill.setBillItems(getBillItems(billId));
+                    bill.setBillItems(getBillItems(bill.getBillId()));
+                    return bill;
                 }
             }
         }
-        return bill;
+        return null;
+    }
+
+    public List<Bill> findBillsByCustomerId(int customerId) throws SQLException {
+        List<Bill> bills = new ArrayList<>();
+        String query = "SELECT * FROM bills WHERE customer_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, customerId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Bill bill = new Bill();
+                    bill.setBillId(rs.getInt("bill_id"));
+                    bill.setReferenceNumber(rs.getString("reference_number"));
+                    bill.setCustomerId(rs.getInt("customer_id"));
+                    bill.setTotalAmount(rs.getDouble("total_amount"));
+                    bill.setBillDate(rs.getDate("bill_date"));
+                    bill.setBillItems(getBillItems(bill.getBillId()));
+                    bills.add(bill);
+                }
+            }
+        }
+        return bills;
     }
 
     private List<BillItem> getBillItems(int billId) throws SQLException {
@@ -117,6 +120,7 @@ public class BillDao {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     BillItem billItem = new BillItem();
+                    billItem.setBillItemId(rs.getInt("bill_item_id"));
                     billItem.setBillId(rs.getInt("bill_id"));
                     billItem.setItemId(rs.getInt("item_id"));
                     billItem.setQuantity(rs.getInt("quantity"));

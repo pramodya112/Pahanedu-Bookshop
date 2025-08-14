@@ -147,6 +147,7 @@
                 alert(message);
             }
             
+            // This is the new part that displays the error message
             if (error && error.trim() !== 'null') {
                 alert('Error: ' + error);
             }

@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat; // New import
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,13 +26,20 @@ public class StaffGenerateBillControl extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        staffService = new StaffService();
+        staffService = new StaffService(); // This creates a real StaffService for the app
     }
+
+    // --- IMPORTANT: Ensure this setter is present for testability ---
+    public void setStaffService(StaffService staffService) {
+        this.staffService = staffService; // This allows tests to inject a mock StaffService
+    }
+    // --- End of important setter ---
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
-        
+
         // Retrieve and remove session messages for one-time display
         if (session.getAttribute("message") != null) {
             request.setAttribute("message", session.getAttribute("message"));
@@ -42,18 +49,18 @@ public class StaffGenerateBillControl extends HttpServlet {
             request.setAttribute("error", session.getAttribute("error"));
             session.removeAttribute("error");
         }
-        
+
         try {
             List<Customer> customerList = staffService.getAllCustomers();
             List<Item> itemList = staffService.getAllItems();
-            
+
             if (customerList == null || customerList.isEmpty()) {
                 request.setAttribute("error", "No customers available. Please add a customer first.");
             }
             if (itemList == null || itemList.isEmpty()) {
                 request.setAttribute("error", "No items available. Please add items first.");
             }
-            
+
             request.setAttribute("customerList", customerList);
             request.setAttribute("itemList", itemList);
             request.getRequestDispatcher("staffGenerateBill.jsp").forward(request, response);
@@ -114,7 +121,7 @@ public class StaffGenerateBillControl extends HttpServlet {
                         response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                         return;
                     }
-                    
+
                     if (quantity > 0) {
                         BillItem billItem = new BillItem();
                         billItem.setItemId(itemId);
@@ -124,7 +131,7 @@ public class StaffGenerateBillControl extends HttpServlet {
                         totalAmount += item.getPrice() * quantity;
                         item.setQuantity(item.getQuantity() - quantity);
                         staffService.updateItem(item);
-                        
+
                         receiptItems.add(new ReceiptItem(item, quantity));
                     }
                 }
@@ -134,7 +141,7 @@ public class StaffGenerateBillControl extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                     return;
                 }
-                
+
                 // Generate a unique reference number
                 String referenceNumber = generateUniqueReferenceNumber();
 
@@ -146,9 +153,9 @@ public class StaffGenerateBillControl extends HttpServlet {
                 bill.setBillItems(billItems);
 
                 staffService.addBill(bill); // Ensure this method can handle the new field
-                
-                Customer customer = staffService.getCustomerById(customerId); 
-                
+
+                Customer customer = staffService.getCustomerById(customerId);
+
                 request.setAttribute("bill", bill);
                 request.setAttribute("receiptItems", receiptItems);
                 request.setAttribute("customer", customer);
@@ -172,7 +179,7 @@ public class StaffGenerateBillControl extends HttpServlet {
             return;
         }
     }
-    
+
     /**
      * Generates a unique, alphanumeric reference number.
      * Example: INV-20250811103055-1234
