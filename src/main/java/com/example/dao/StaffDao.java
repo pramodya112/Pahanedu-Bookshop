@@ -28,6 +28,7 @@ public class StaffDao {
                     staff.setFirstName(rs.getString("first_name"));
                     staff.setLastName(rs.getString("last_name"));
                     staff.setRole(rs.getString("role"));
+                    staff.setGmail(rs.getString("gmail")); // Retrieve gmail
                     return staff;
                 }
             }
@@ -47,6 +48,7 @@ public class StaffDao {
                 staff.setFirstName(rs.getString("first_name"));
                 staff.setLastName(rs.getString("last_name"));
                 staff.setRole(rs.getString("role"));
+                staff.setGmail(rs.getString("gmail")); // Retrieve gmail
                 staffList.add(staff);
             }
         }
@@ -54,26 +56,28 @@ public class StaffDao {
     }
 
     public void addStaff(Staff staff) throws SQLException {
-        String query = "INSERT INTO staff (username, password, first_name, last_name, role) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO staff (username, password, first_name, last_name, role, gmail) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, staff.getUsername());
             stmt.setString(2, staff.getPassword());
             stmt.setString(3, staff.getFirstName());
             stmt.setString(4, staff.getLastName());
             stmt.setString(5, staff.getRole());
+            stmt.setString(6, staff.getGmail()); // Add gmail
             stmt.executeUpdate();
         }
     }
 
     public void updateStaff(Staff staff) throws SQLException {
-        String query = "UPDATE staff SET username = ?, password = ?, first_name = ?, last_name = ?, role = ? WHERE staff_id = ?";
+        String query = "UPDATE staff SET username = ?, password = ?, first_name = ?, last_name = ?, role = ?, gmail = ? WHERE staff_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, staff.getUsername());
             stmt.setString(2, staff.getPassword());
             stmt.setString(3, staff.getFirstName());
             stmt.setString(4, staff.getLastName());
             stmt.setString(5, staff.getRole());
-            stmt.setInt(6, staff.getStaffId());
+            stmt.setString(6, staff.getGmail()); // Add gmail
+            stmt.setInt(7, staff.getStaffId());
             stmt.executeUpdate();
         }
     }
@@ -98,6 +102,7 @@ public class StaffDao {
                     staff.setFirstName(rs.getString("first_name"));
                     staff.setLastName(rs.getString("last_name"));
                     staff.setRole(rs.getString("role"));
+                    staff.setGmail(rs.getString("gmail")); // Retrieve gmail
                     return staff;
                 }
             }

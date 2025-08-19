@@ -1,6 +1,7 @@
 package com.example.control;
 
 import com.example.model.Item;
+import com.example.model.Staff; // Import the Staff model
 import com.example.service.StaffService;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,9 +22,26 @@ public class StaffManageItemsControl extends HttpServlet {
     public void init() throws ServletException {
         staffService = new StaffService();
     }
+    
+    // Helper method to check if the user is authorized (admin or staff)
+    private boolean isAuthorized(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null && session.getAttribute("staff") != null) {
+            Staff currentStaff = (Staff) session.getAttribute("staff");
+            String role = currentStaff.getRole();
+            return "admin".equals(role) || "staff".equals(role);
+        }
+        return false;
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Security check: Deny access if user is not an admin or staff
+        if (!isAuthorized(request)) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp?error=Access denied. Please log in as admin or staff.");
+            return;
+        }
+
         HttpSession session = request.getSession();
         
         // Retrieve and remove session messages for one-time display
@@ -60,6 +78,12 @@ public class StaffManageItemsControl extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Security check: Deny access if user is not an admin or staff
+        if (!isAuthorized(request)) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp?error=Access denied. Please log in as admin or staff.");
+            return;
+        }
+
         String action = request.getParameter("action");
         HttpSession session = request.getSession();
 
@@ -67,8 +91,8 @@ public class StaffManageItemsControl extends HttpServlet {
             if ("add".equals(action)) {
                 Item item = new Item();
                 item.setTitle(request.getParameter("title"));
-                item.setAuthor("");
-                item.setGenre("");
+                item.setAuthor(request.getParameter("author"));
+                item.setGenre(request.getParameter("genre"));
                 item.setPrice(Double.parseDouble(request.getParameter("price")));
                 item.setQuantity(Integer.parseInt(request.getParameter("quantity")));
                 staffService.addItem(item);
@@ -77,8 +101,8 @@ public class StaffManageItemsControl extends HttpServlet {
                 Item item = new Item();
                 item.setItemId(Integer.parseInt(request.getParameter("itemId")));
                 item.setTitle(request.getParameter("title"));
-                item.setAuthor("");
-                item.setGenre("");
+                item.setAuthor(request.getParameter("author"));
+                item.setGenre(request.getParameter("genre"));
                 item.setPrice(Double.parseDouble(request.getParameter("price")));
                 item.setQuantity(Integer.parseInt(request.getParameter("quantity")));
                 staffService.updateItem(item);

@@ -2,6 +2,7 @@ package com.example.control;
 
 import com.example.model.Staff;
 import com.example.service.StaffService;
+import com.example.service.LogService; // Import the new LogService
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -14,10 +15,12 @@ import java.sql.SQLException;
 @WebServlet("/login")
 public class LoginControl extends HttpServlet {
     private StaffService staffService;
+    private LogService logService; // Declare the new service
 
     @Override
     public void init() throws ServletException {
         staffService = new StaffService();
+        logService = new LogService(); // Initialize the new service
     }
 
     @Override
@@ -34,6 +37,11 @@ public class LoginControl extends HttpServlet {
                 staff.setUsername(username);
                 staff.setRole("admin");
                 session.setAttribute("staff", staff);
+                session.setAttribute("successMessage", "Welcome, Admin!");
+
+                // Log admin login
+                logService.logEvent(username, "Admin Logged in");
+
                 System.out.println("LoginControl: Admin authenticated, Staff object set with role='admin', redirecting to adminDashboard.jsp");
                 response.sendRedirect(request.getContextPath() + "/adminDashboard.jsp");
                 return;
@@ -44,6 +52,11 @@ public class LoginControl extends HttpServlet {
             if (staff != null) {
                 HttpSession session = request.getSession();
                 session.setAttribute("staff", staff);
+                session.setAttribute("successMessage", "Welcome, " + staff.getUsername() + "!");
+
+                // Log staff login
+                logService.logEvent(username, "Staff Logged in");
+
                 System.out.println("LoginControl: Staff authenticated, Staff object set with role='staff', redirecting to staffDashboard.jsp");
                 response.sendRedirect(request.getContextPath() + "/staffDashboard.jsp");
             } else {

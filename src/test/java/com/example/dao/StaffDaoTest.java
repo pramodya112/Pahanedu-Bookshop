@@ -25,7 +25,7 @@ public class StaffDaoTest {
 
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("DROP TABLE IF EXISTS staff");
-            stmt.execute("CREATE TABLE staff (staff_id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50), password VARCHAR(50), first_name VARCHAR(50), last_name VARCHAR(50), role VARCHAR(20))");
+            stmt.execute("CREATE TABLE staff (staff_id INT AUTO_INCREMENT PRIMARY KEY, username VARCHAR(50), password VARCHAR(50), first_name VARCHAR(50), last_name VARCHAR(50), role VARCHAR(20), gmail VARCHAR(100))");
         }
         staffDao = new StaffDao(connection);
     }
@@ -38,6 +38,7 @@ public class StaffDaoTest {
         staff.setFirstName("Test");
         staff.setLastName("User");
         staff.setRole("staff");
+        staff.setGmail("testuser@gmail.com"); // Added gmail
         staffDao.addStaff(staff);
 
         Staff foundStaff = staffDao.authenticateStaff("testuser", "testpass");
@@ -53,6 +54,7 @@ public class StaffDaoTest {
         staff.setFirstName("Admin");
         staff.setLastName("User");
         staff.setRole("admin");
+        staff.setGmail("admin@gmail.com"); // Added gmail
         staffDao.addStaff(staff);
         int staffId = staffDao.authenticateStaff("admin", "adminpass").getStaffId();
 
@@ -69,6 +71,7 @@ public class StaffDaoTest {
         staff1.setFirstName("First");
         staff1.setLastName("User");
         staff1.setRole("staff");
+        staff1.setGmail("user1@gmail.com"); // Added gmail
         staffDao.addStaff(staff1);
 
         Staff staff2 = new Staff();
@@ -77,6 +80,7 @@ public class StaffDaoTest {
         staff2.setFirstName("Second");
         staff2.setLastName("User");
         staff2.setRole("admin");
+        staff2.setGmail("user2@gmail.com"); // Added gmail
         staffDao.addStaff(staff2);
 
         List<Staff> staffList = staffDao.getAllStaff();
@@ -91,6 +95,7 @@ public class StaffDaoTest {
         staff.setFirstName("Old");
         staff.setLastName("User");
         staff.setRole("staff");
+        staff.setGmail("olduser@gmail.com"); // Added gmail
         staffDao.addStaff(staff);
         int staffId = staffDao.authenticateStaff("olduser", "oldpass").getStaffId();
 
@@ -101,6 +106,7 @@ public class StaffDaoTest {
         updatedStaff.setFirstName("New");
         updatedStaff.setLastName("User");
         updatedStaff.setRole("admin");
+        updatedStaff.setGmail("newuser@gmail.com"); // Added gmail
         staffDao.updateStaff(updatedStaff);
 
         Staff foundStaff = staffDao.getStaffById(staffId);
@@ -116,6 +122,7 @@ public class StaffDaoTest {
         staff.setFirstName("To");
         staff.setLastName("Delete");
         staff.setRole("staff");
+        staff.setGmail("todelete@gmail.com"); // Added gmail
         staffDao.addStaff(staff);
         int staffId = staffDao.authenticateStaff("todelete", "pass").getStaffId();
 

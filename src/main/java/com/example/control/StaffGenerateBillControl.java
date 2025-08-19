@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @WebServlet("/staffGenerateBill")
 public class StaffGenerateBillControl extends HttpServlet {
@@ -26,21 +27,17 @@ public class StaffGenerateBillControl extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        staffService = new StaffService(); // This creates a real StaffService for the app
+        staffService = new StaffService();
     }
 
-    // --- IMPORTANT: Ensure this setter is present for testability ---
     public void setStaffService(StaffService staffService) {
-        this.staffService = staffService; // This allows tests to inject a mock StaffService
+        this.staffService = staffService;
     }
-    // --- End of important setter ---
-
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
 
-        // Retrieve and remove session messages for one-time display
         if (session.getAttribute("message") != null) {
             request.setAttribute("message", session.getAttribute("message"));
             session.removeAttribute("message");
@@ -86,8 +83,8 @@ public class StaffGenerateBillControl extends HttpServlet {
                 customer.setPhone(request.getParameter("phone"));
                 customer.setAddress(request.getParameter("address"));
                 staffService.addCustomer(customer);
-                session.setAttribute("message", "Customer added successfully"); // Set message in session
-                response.sendRedirect(request.getContextPath() + "/staffGenerateBill"); // Redirect
+                session.setAttribute("message", "Customer added successfully");
+                response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                 return;
             } else if ("generateBill".equals(action)) {
                 String customerIdStr = request.getParameter("customerId");
@@ -95,7 +92,7 @@ public class StaffGenerateBillControl extends HttpServlet {
                 String[] quantities = request.getParameterValues("quantities");
 
                 if (customerIdStr == null || customerIdStr.isEmpty()) {
-                    session.setAttribute("error", "Please select a customer");
+                    session.setAttribute("error", "Please select a customer.");
                     response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                     return;
                 }
@@ -104,9 +101,10 @@ public class StaffGenerateBillControl extends HttpServlet {
                 List<BillItem> billItems = new ArrayList<>();
                 double totalAmount = 0.0;
                 List<ReceiptItem> receiptItems = new ArrayList<>();
+                List<Item> itemsToUpdate = new ArrayList<>();
 
                 if (itemIds == null || quantities == null || itemIds.length != quantities.length) {
-                    session.setAttribute("error", "Invalid item selection or quantities");
+                    session.setAttribute("error", "Invalid item selection or quantities.");
                     response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                     return;
                 }
@@ -116,28 +114,30 @@ public class StaffGenerateBillControl extends HttpServlet {
                     int quantity = Integer.parseInt(quantities[i]);
                     Item item = staffService.getItemById(itemId);
 
-                    if (item == null || (quantity > 0 && quantity > item.getQuantity())) {
-                        session.setAttribute("error", "Insufficient stock or item not found.");
-                        response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
-                        return;
-                    }
-
                     if (quantity > 0) {
+                        if (item == null || quantity > item.getQuantity()) {
+                            session.setAttribute("error", "Insufficient stock for " + (item != null ? item.getTitle() : "an item."));
+                            response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
+                            return;
+                        }
+                        
                         BillItem billItem = new BillItem();
                         billItem.setItemId(itemId);
                         billItem.setQuantity(quantity);
                         billItem.setUnitPrice(item.getPrice());
                         billItems.add(billItem);
                         totalAmount += item.getPrice() * quantity;
+                        
+                        // Prepare item for stock update
                         item.setQuantity(item.getQuantity() - quantity);
-                        staffService.updateItem(item);
+                        itemsToUpdate.add(item);
 
                         receiptItems.add(new ReceiptItem(item, quantity));
                     }
                 }
 
                 if (billItems.isEmpty()) {
-                    session.setAttribute("error", "No valid items selected");
+                    session.setAttribute("error", "No valid items selected.");
                     response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                     return;
                 }
@@ -146,16 +146,24 @@ public class StaffGenerateBillControl extends HttpServlet {
                 String referenceNumber = generateUniqueReferenceNumber();
 
                 Bill bill = new Bill();
-                bill.setReferenceNumber(referenceNumber); // Set the reference number
+                bill.setReferenceNumber(referenceNumber);
                 bill.setCustomerId(customerId);
                 bill.setTotalAmount(totalAmount);
                 bill.setBillDate(new Date());
                 bill.setBillItems(billItems);
 
-                staffService.addBill(bill); // Ensure this method can handle the new field
+                // Add the bill and its items to the database
+                staffService.addBill(bill);
+                
+                // Update stock quantities after successful bill creation
+                for (Item item : itemsToUpdate) {
+                    staffService.updateItem(item);
+                }
 
+                // Retrieve customer details for the receipt
                 Customer customer = staffService.getCustomerById(customerId);
 
+                // Forward to the receipt page with bill details
                 request.setAttribute("bill", bill);
                 request.setAttribute("receiptItems", receiptItems);
                 request.setAttribute("customer", customer);
@@ -163,7 +171,7 @@ public class StaffGenerateBillControl extends HttpServlet {
                 request.getRequestDispatcher("billReceipt.jsp").forward(request, response);
                 return;
             } else {
-                session.setAttribute("error", "Invalid action");
+                session.setAttribute("error", "Invalid action.");
                 response.sendRedirect(request.getContextPath() + "/staffGenerateBill");
                 return;
             }
@@ -179,15 +187,8 @@ public class StaffGenerateBillControl extends HttpServlet {
             return;
         }
     }
-
-    /**
-     * Generates a unique, alphanumeric reference number.
-     * Example: INV-20250811103055-1234
-     */
+    
     private String generateUniqueReferenceNumber() {
-        String prefix = "INV-";
-        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-        String randomPart = String.format("%04d", (int) (Math.random() * 9999));
-        return prefix + timestamp + "-" + randomPart;
+        return "INV-" + UUID.randomUUID().toString();
     }
 }

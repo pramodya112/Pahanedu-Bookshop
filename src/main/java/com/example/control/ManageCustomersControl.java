@@ -27,7 +27,6 @@ public class ManageCustomersControl extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
 
-        // Retrieve and remove session attributes to display one-time messages
         if (session.getAttribute("message") != null) {
             request.setAttribute("message", session.getAttribute("message"));
             session.removeAttribute("message");
@@ -60,19 +59,24 @@ public class ManageCustomersControl extends HttpServlet {
         String action = request.getParameter("action");
         HttpSession session = request.getSession();
         
-        // Get the current user's role from the session
         Staff staff = (Staff) session.getAttribute("staff");
 
         try {
             if ("add".equals(action)) {
-                Customer customer = new Customer();
-                customer.setFirstName(request.getParameter("firstName"));
-                customer.setLastName(request.getParameter("lastName"));
-                customer.setEmail(request.getParameter("email"));
-                customer.setPhone(request.getParameter("phone"));
-                customer.setAddress(request.getParameter("address"));
-                staffService.addCustomer(customer);
-                session.setAttribute("message", "Customer added successfully");
+                String email = request.getParameter("email");
+                
+                if (staffService.isCustomerEmailExists(email)) {
+                    session.setAttribute("error", "A customer with this email already exists.");
+                } else {
+                    Customer customer = new Customer();
+                    customer.setFirstName(request.getParameter("firstName"));
+                    customer.setLastName(request.getParameter("lastName"));
+                    customer.setEmail(email);
+                    customer.setPhone(request.getParameter("phone"));
+                    customer.setAddress(request.getParameter("address"));
+                    staffService.addCustomer(customer);
+                    session.setAttribute("message", "Customer added successfully");
+                }
             } else if ("update".equals(action)) {
                 Customer customer = new Customer();
                 customer.setCustomerId(Integer.parseInt(request.getParameter("customerId")));
@@ -84,11 +88,10 @@ public class ManageCustomersControl extends HttpServlet {
                 staffService.updateCustomer(customer);
                 session.setAttribute("message", "Customer updated successfully");
             } else if ("delete".equals(action)) {
-                // Security check: Only allow 'admin' to delete customers
                 if (staff != null && "admin".equals(staff.getRole())) {
                     int customerId = Integer.parseInt(request.getParameter("customerId"));
-                    staffService.deleteCustomer(customerId);
-                    session.setAttribute("message", "Customer deleted successfully");
+                    staffService.deleteCustomerWithDependencies(customerId); // USE THIS NEW METHOD
+                    session.setAttribute("message", "Customer and associated bills deleted successfully.");
                 } else {
                     session.setAttribute("error", "You do not have permission to delete customers.");
                 }

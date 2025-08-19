@@ -83,6 +83,10 @@ public class StaffService {
         customerDao.addCustomer(customer);
     }
 
+    public boolean isCustomerEmailExists(String email) throws SQLException {
+        return customerDao.isCustomerEmailExists(email);
+    }
+
     public void updateCustomer(Customer customer) throws SQLException {
         customerDao.updateCustomer(customer);
     }
@@ -92,6 +96,12 @@ public class StaffService {
     }
 
     public void deleteCustomer(int customerId) throws SQLException {
+        customerDao.deleteCustomer(customerId);
+    }
+
+    // New method to handle cascaded deletion
+    public void deleteCustomerWithDependencies(int customerId) throws SQLException {
+        billDao.deleteBillsAndBillItemsByCustomerId(customerId);
         customerDao.deleteCustomer(customerId);
     }
 

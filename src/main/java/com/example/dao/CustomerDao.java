@@ -46,6 +46,19 @@ public class CustomerDao {
         }
     }
 
+    public boolean isCustomerEmailExists(String email) throws SQLException {
+        String query = "SELECT COUNT(*) FROM customers WHERE email = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
     public void updateCustomer(Customer customer) throws SQLException {
         String query = "UPDATE customers SET first_name = ?, last_name = ?, email = ?, phone = ?, address = ? WHERE customer_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {

@@ -7,6 +7,7 @@ public class Staff {
     private String firstName;
     private String lastName;
     private String role;
+    private String gmail; // New field
 
     // Getters and Setters
     public int getStaffId() {
@@ -55,5 +56,13 @@ public class Staff {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getGmail() {
+        return gmail;
+    }
+
+    public void setGmail(String gmail) {
+        this.gmail = gmail;
     }
 }

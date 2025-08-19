@@ -28,7 +28,7 @@ public class BillDao {
                 stmt.executeUpdate();
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
-                        bill.setBillId(rs.getInt(1)); // Set the generated bill_id back to the Bill object
+                        bill.setBillId(rs.getInt(1));
                     }
                 }
             }
@@ -130,5 +130,49 @@ public class BillDao {
             }
         }
         return billItems;
+    }
+    
+    // New method to delete bills and their associated bill items
+    public void deleteBillsAndBillItemsByCustomerId(int customerId) throws SQLException {
+        connection.setAutoCommit(false);
+        try {
+            // Step 1: Find all bill IDs for the given customer
+            List<Integer> billIds = new ArrayList<>();
+            String findBillsQuery = "SELECT bill_id FROM bills WHERE customer_id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(findBillsQuery)) {
+                stmt.setInt(1, customerId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        billIds.add(rs.getInt("bill_id"));
+                    }
+                }
+            }
+
+            // Step 2: Delete bill items for each bill
+            if (!billIds.isEmpty()) {
+                String deleteBillItemsQuery = "DELETE FROM bill_items WHERE bill_id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(deleteBillItemsQuery)) {
+                    for (Integer billId : billIds) {
+                        stmt.setInt(1, billId);
+                        stmt.addBatch();
+                    }
+                    stmt.executeBatch();
+                }
+            }
+
+            // Step 3: Delete the bills themselves
+            String deleteBillsQuery = "DELETE FROM bills WHERE customer_id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(deleteBillsQuery)) {
+                stmt.setInt(1, customerId);
+                stmt.executeUpdate();
+            }
+
+            connection.commit();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
+        }
     }
 }
